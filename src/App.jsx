@@ -16,7 +16,7 @@ import { projects } from './data/projects'
 import { NAV_SECTIONS } from './data/nav'
 import { useIsMobile } from './hooks/useMediaQuery'
 import { bootLog } from './utils/bootLog'
-import { clearScrollLock } from './utils/scrollLock'
+import { clearScrollLock, getScrollLockY, forceUnlockAndScrollTo } from './utils/scrollLock'
 
 function App() {
   const [activeSection, setActiveSection] = useState('home')
@@ -37,7 +37,20 @@ function App() {
   useEffect(() => {
     bootLog('app:mount')
     clearScrollLock()
-    return () => bootLog('app:unmount')
+
+    const handlePageShow = (event) => {
+      if (event.persisted) {
+        clearScrollLock()
+        setRevealed(true)
+        setIsLoading(false)
+      }
+    }
+
+    window.addEventListener('pageshow', handlePageShow)
+    return () => {
+      bootLog('app:unmount')
+      window.removeEventListener('pageshow', handlePageShow)
+    }
   }, [])
 
   useEffect(() => {
@@ -88,18 +101,14 @@ function App() {
 
   const scrollToSection = (sectionId) => {
     const element = document.getElementById(sectionId)
-    if (element) {
-      const offset = isMobile ? 72 : 80
-      const elementPosition = element.getBoundingClientRect().top
-      const offsetPosition = elementPosition + window.pageYOffset - offset
+    if (!element) return
 
-      if (window.lenis) {
-        window.lenis.scrollTo(offsetPosition, { duration: isMobile ? 1 : 1.2 })
-      } else {
-        window.scrollTo({ top: offsetPosition, behavior: 'smooth' })
-      }
-      setIsMobileMenuOpen(false)
-    }
+    const offset = isMobile ? 72 : 80
+    const scrollY = getScrollLockY()
+    const targetY = Math.max(0, element.getBoundingClientRect().top + scrollY - offset)
+
+    setIsMobileMenuOpen(false)
+    forceUnlockAndScrollTo(targetY)
   }
 
   return (
@@ -128,7 +137,7 @@ function App() {
 
       <div
         className={`relative w-full z-[1] ${
-          revealed ? 'opacity-100' : 'max-h-0 opacity-0 overflow-hidden pointer-events-none'
+          revealed ? 'opacity-100' : 'opacity-0 pointer-events-none'
         }`}
         style={{
           transition: 'opacity 1.15s cubic-bezier(0.22, 1, 0.36, 1)',

@@ -40,6 +40,18 @@ const LineReveal = ({ children, delay = 0, className = '' }) => (
   </span>
 )
 
+const computeHoldDuration = (duration, lite, isMobile) => {
+  if (lite) return duration * 0.45
+  if (isMobile) return duration * 0.82
+  return duration
+}
+
+const computeExitDurationMs = (lite, isMobile) => {
+  if (lite) return 650
+  if (isMobile) return 850
+  return 1050
+}
+
 const Loading = ({ isLoading, onComplete, content, currentLanguage, duration = 3200 }) => {
   const lang = currentLanguage || 'en'
   const lite = usePreferReducedEffects()
@@ -47,9 +59,16 @@ const Loading = ({ isLoading, onComplete, content, currentLanguage, duration = 3
   const [active, setActive] = useState(isLoading)
   const [passthrough, setPassthrough] = useState(false)
   const hasRevealedRef = useRef(false)
+  const timingRef = useRef(null)
 
-  const holdDuration = lite ? duration * 0.45 : isMobile ? duration * 0.82 : duration
-  const exitDurationMs = lite ? 650 : isMobile ? 850 : 1050
+  if (timingRef.current === null) {
+    timingRef.current = {
+      holdDuration: computeHoldDuration(duration, lite, isMobile),
+      exitDurationMs: computeExitDurationMs(lite, isMobile),
+    }
+  }
+
+  const { holdDuration, exitDurationMs } = timingRef.current
 
   const hero = content[lang]?.hero
   const name = hero?.title ?? 'Suhejb Kadrija'
@@ -73,12 +92,10 @@ const Loading = ({ isLoading, onComplete, content, currentLanguage, duration = 3
   }, [revealApp])
 
   useEffect(() => {
-    if (isLoading) {
-      setActive(true)
-      setPassthrough(false)
-      hasRevealedRef.current = false
-      bootLog('loader:active')
-    }
+    if (!isLoading) return
+    setActive(true)
+    setPassthrough(false)
+    bootLog('loader:active')
   }, [isLoading])
 
   useEffect(() => {
@@ -115,13 +132,7 @@ const Loading = ({ isLoading, onComplete, content, currentLanguage, duration = 3
   const useSimpleExit = lite || isMobile
 
   return (
-    <AnimatePresence
-      mode="wait"
-      onExitComplete={() => {
-        bootLog('loader:exit-complete')
-        revealApp()
-      }}
-    >
+    <AnimatePresence mode="wait">
       {active && (
         <motion.div
           key="luxury-intro"
