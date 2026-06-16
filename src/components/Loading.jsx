@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { usePreferReducedEffects, useIsMobile } from '../hooks/useMediaQuery'
 import { bootLog } from '../utils/bootLog'
-import { lockScroll, clearScrollLock } from '../utils/scrollLock'
+import { lockScroll, unlockScroll } from '../utils/scrollLock'
 
 const LUX_EASE = [0.22, 1, 0.36, 1]
 const EXIT_EASE = [0.76, 0, 0.24, 1]
@@ -108,7 +108,7 @@ const Loading = ({ isLoading, onComplete, content, currentLanguage, duration = 3
     lockScroll()
     return () => {
       bootLog('loader:scroll-unlock')
-      clearScrollLock()
+      unlockScroll()
     }
   }, [active])
 

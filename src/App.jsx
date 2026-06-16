@@ -127,8 +127,8 @@ function App() {
       />
 
       <div
-        className={`w-full z-[1] ${
-          revealed ? 'relative min-h-screen opacity-100' : 'fixed inset-0 overflow-hidden opacity-0 pointer-events-none'
+        className={`relative w-full z-[1] ${
+          revealed ? 'opacity-100' : 'max-h-0 opacity-0 overflow-hidden pointer-events-none'
         }`}
         style={{
           transition: 'opacity 1.15s cubic-bezier(0.22, 1, 0.36, 1)',

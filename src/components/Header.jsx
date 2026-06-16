@@ -5,7 +5,7 @@ import { NAV_SECTIONS } from '../data/nav'
 import MagneticButton from './ui/MagneticButton'
 import HamburgerIcon from './ui/HamburgerIcon'
 import { useIsMobile } from '../hooks/useMediaQuery'
-import { lockScroll, clearScrollLock } from '../utils/scrollLock'
+import { lockScroll, unlockScroll } from '../utils/scrollLock'
 
 const menuVariants = {
   closed: { opacity: 0 },
@@ -56,9 +56,9 @@ const Header = ({
     if (isMobileMenuOpen) {
       lockScroll()
     } else {
-      clearScrollLock()
+      unlockScroll()
     }
-    return () => clearScrollLock()
+    return () => unlockScroll()
   }, [isMobileMenuOpen])
 
   return (
@@ -181,6 +181,7 @@ const Header = ({
               </div>
 
               <motion.button
+                type="button"
                 className="xl:hidden touch-target flex items-center justify-center text-white/80 hover:text-white transition-colors -mr-1"
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                 whileTap={{ scale: 0.92 }}

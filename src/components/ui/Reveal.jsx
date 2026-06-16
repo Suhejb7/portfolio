@@ -2,13 +2,10 @@ import { forwardRef, useRef, useEffect, useState } from 'react'
 import { motion, useInView } from 'framer-motion'
 import { LUX_EASE, REVEAL_VIEWPORT } from '../../utils/animations'
 import { usePreferReducedEffects } from '../../hooks/useMediaQuery'
-import { bootLog } from '../../utils/bootLog'
 
 /**
- * Safari-safe scroll reveal.
- * - useInView + animate() instead of whileInView
- * - Mobile/touch: content always visible (no opacity trap)
- * - Desktop: fade up when scrolled into view
+ * Scroll reveal — desktop uses useInView + animate().
+ * Mobile/touch skips opacity-0 entirely (Safari IO / layout safe).
  */
 const Reveal = forwardRef(function Reveal(
   { children, className = '', delay = 0, y = 24, as: Component = motion.div, ...props },
@@ -25,25 +22,21 @@ const Reveal = forwardRef(function Reveal(
     else if (forwardedRef) forwardedRef.current = node
   }
 
-  const visible = reduceEffects || isInView || forceVisible
-
   useEffect(() => {
     if (reduceEffects || isInView) return undefined
-    const timer = setTimeout(() => {
-      if (!localRef.current) return
-      bootLog('reveal:failsafe', { className })
-      setForceVisible(true)
-    }, 1200)
+    const timer = setTimeout(() => setForceVisible(true), 1200)
     return () => clearTimeout(timer)
-  }, [reduceEffects, isInView, className])
+  }, [reduceEffects, isInView])
 
   if (reduceEffects) {
     return (
-      <div ref={setRefs} className={className} {...props}>
+      <Component ref={setRefs} className={className} initial={false} {...props}>
         {children}
-      </div>
+      </Component>
     )
   }
+
+  const visible = isInView || forceVisible
 
   return (
     <Component

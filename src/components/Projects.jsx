@@ -35,24 +35,24 @@ const ProjectMediaChrome = ({ project, index, t }) => (
   </>
 )
 
-const ProjectImage = ({ project, index }) => (
+const ProjectImage = ({ project, index, preferEager }) => (
   <img
     src={project.image}
     alt={project.title}
     className={project.featured ? 'project-card-media__img project-card-media__img--fit' : 'project-card-media__img'}
-    loading={index === 0 ? 'eager' : 'lazy'}
+    loading={preferEager || index === 0 ? 'eager' : 'lazy'}
     decoding="async"
   />
 )
 
-const StaticProjectMedia = ({ project, index, t }) => (
+const StaticProjectMedia = ({ project, index, t, preferEager }) => (
   <div
     className={`project-card-media ${project.featured ? 'project-card-media--dashboard' : ''} ${
       index % 2 === 0 ? 'lg:order-1' : 'lg:order-2'
     }`}
   >
     <div className="project-card-media__parallax">
-      <ProjectImage project={project} index={index} />
+      <ProjectImage project={project} index={index} preferEager={preferEager} />
     </div>
     <div className="project-card-media__glow" aria-hidden="true" />
     <div className="project-card-media__fade" aria-hidden="true" />
@@ -61,7 +61,7 @@ const StaticProjectMedia = ({ project, index, t }) => (
   </div>
 )
 
-const ParallaxProjectMedia = ({ project, index, t }) => {
+const ParallaxProjectMedia = ({ project, index, t, preferEager }) => {
   const mediaRef = useRef(null)
   const { scrollYProgress } = useScroll({
     target: mediaRef,
@@ -77,7 +77,7 @@ const ParallaxProjectMedia = ({ project, index, t }) => {
       }`}
     >
       <motion.div className="project-card-media__parallax" style={{ y: imageY }}>
-        <ProjectImage project={project} index={index} />
+        <ProjectImage project={project} index={index} preferEager={preferEager} />
       </motion.div>
       <div className="project-card-media__glow" aria-hidden="true" />
       <div className="project-card-media__fade" aria-hidden="true" />
@@ -99,7 +99,7 @@ const ProjectCard = ({ project, index, t }) => {
             index % 2 === 0 ? 'lg:grid-cols-[46fr_54fr]' : 'lg:grid-cols-[54fr_46fr]'
           }`}
         >
-          <Media project={project} index={index} t={t} />
+          <Media project={project} index={index} t={t} preferEager={reduceEffects} />
 
           <div
             className={`project-showcase-body ${
