@@ -7,6 +7,8 @@ import { lockScroll, unlockScroll } from '../utils/scrollLock'
 const LUX_EASE = [0.22, 1, 0.36, 1]
 const EXIT_EASE = [0.76, 0, 0.24, 1]
 
+export const MOBILE_HOLD_MS = 2400
+
 export const isTouchLike = () => {
   if (typeof window === 'undefined') return true
   return window.matchMedia('(max-width: 1023px), (pointer: coarse)').matches
@@ -200,6 +202,8 @@ const DesktopLoader = ({
   )
 }
 
+const DESKTOP_HOLD_MS = 3800
+
 const Loading = ({ isLoading, onComplete, content, currentLanguage, duration = 3200 }) => {
   const touchLike = useTouchLike()
   const lite = usePreferReducedEffects()
@@ -207,13 +211,14 @@ const Loading = ({ isLoading, onComplete, content, currentLanguage, duration = 3
   const lang = currentLanguage || 'en'
   const [visible, setVisible] = useState(isLoading)
   const hasCompletedRef = useRef(false)
+  const timerStartedRef = useRef(false)
   const onCompleteRef = useRef(onComplete)
   onCompleteRef.current = onComplete
 
   const timingRef = useRef(null)
   if (timingRef.current === null) {
     timingRef.current = {
-      holdMs: touchLike ? 3200 : duration,
+      holdMs: touchLike ? MOBILE_HOLD_MS : duration || DESKTOP_HOLD_MS,
       exitDurationMs: touchLike || lite ? 650 : isMobile ? 850 : 1050,
     }
   }
@@ -228,7 +233,6 @@ const Loading = ({ isLoading, onComplete, content, currentLanguage, duration = 3
     onCompleteRef.current?.()
   }, [])
 
-  // Single stable timer — never reset by hook re-renders.
   useEffect(() => {
     if (!isLoading) {
       setVisible(false)
@@ -236,20 +240,20 @@ const Loading = ({ isLoading, onComplete, content, currentLanguage, duration = 3
     }
 
     setVisible(true)
-    hasCompletedRef.current = false
+
+    if (timerStartedRef.current) return undefined
+    timerStartedRef.current = true
     bootLog('loader:timer-start', { holdMs })
 
     if (!touchLike) lockScroll()
 
     const dismissTimer = setTimeout(finish, holdMs)
-    const failsafeTimer = setTimeout(finish, holdMs + exitDurationMs + 800)
 
     return () => {
       clearTimeout(dismissTimer)
-      clearTimeout(failsafeTimer)
       if (!touchLike) unlockScroll()
     }
-  }, [isLoading, touchLike, holdMs, exitDurationMs, finish])
+  }, [isLoading, touchLike, holdMs, finish])
 
   if (!visible || !isLoading) return null
 

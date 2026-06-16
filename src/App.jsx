@@ -7,7 +7,7 @@ import Skills from './components/Skills'
 import Projects from './components/Projects'
 import Contact from './components/Contact'
 import Footer from './components/Footer'
-import Loading, { isTouchLike } from './components/Loading'
+import Loading, { isTouchLike, MOBILE_HOLD_MS } from './components/Loading'
 import AnimatedBackground from './components/ui/AnimatedBackground'
 import ScrollProgress from './components/ui/ScrollProgress'
 import { content } from './data/content'
@@ -39,9 +39,9 @@ function App() {
 
   const touchLike = typeof window !== 'undefined' && isTouchLike()
 
-  // Backup if the loader timer is interrupted (Safari refresh / hook churn).
+  // Hard cap — never show loader longer than this on mobile.
   useEffect(() => {
-    const failsafeMs = touchLike ? 4000 : 5500
+    const failsafeMs = touchLike ? MOBILE_HOLD_MS + 600 : 5500
     const failsafe = setTimeout(() => handleLoaderCompleteRef.current(), failsafeMs)
     return () => clearTimeout(failsafe)
   }, [touchLike])
