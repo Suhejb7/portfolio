@@ -5,6 +5,7 @@ import { NAV_SECTIONS } from '../data/nav'
 import MagneticButton from './ui/MagneticButton'
 import HamburgerIcon from './ui/HamburgerIcon'
 import { useIsMobile } from '../hooks/useMediaQuery'
+import { isTouchLike } from './Loading'
 import { lockScroll, unlockScroll } from '../utils/scrollLock'
 
 const menuVariants = {
@@ -35,7 +36,9 @@ const Header = ({
 }) => {
   const [isLanguageMenuOpen, setIsLanguageMenuOpen] = useState(false)
   const isMobile = useIsMobile()
+  const touchLike = typeof window !== 'undefined' && isTouchLike()
   const showGlass = isScrolled || isMobile
+  const headerVisible = touchLike || revealed
 
   useEffect(() => {
     if (!isLanguageMenuOpen) return
@@ -69,11 +72,11 @@ const Header = ({
         }`}
         initial={{ y: -100, opacity: 0 }}
         animate={{
-          y: revealed ? 0 : -100,
-          opacity: revealed ? 1 : 0,
-          pointerEvents: revealed ? 'auto' : 'none',
+          y: headerVisible ? 0 : -100,
+          opacity: headerVisible ? 1 : 0,
+          pointerEvents: headerVisible ? 'auto' : 'none',
         }}
-        transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: revealed ? 0.2 : 0 }}
+        transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: headerVisible ? 0.2 : 0 }}
         style={{ paddingTop: 'max(0.5rem, env(safe-area-inset-top))' }}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

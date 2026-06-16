@@ -7,7 +7,7 @@ import Skills from './components/Skills'
 import Projects from './components/Projects'
 import Contact from './components/Contact'
 import Footer from './components/Footer'
-import Loading from './components/Loading'
+import Loading, { isTouchLike } from './components/Loading'
 import AnimatedBackground from './components/ui/AnimatedBackground'
 import ScrollProgress from './components/ui/ScrollProgress'
 import { content } from './data/content'
@@ -34,26 +34,28 @@ function App() {
     clearScrollLock()
   }, [])
 
-  // Failsafe: never leave content hidden if the loader callback is missed (Safari refresh).
+  const touchLike = typeof window !== 'undefined' && isTouchLike()
+
+  // Failsafe: never leave the app stuck behind the loader (Safari refresh).
   useEffect(() => {
+    const failsafeMs = touchLike ? 2200 : 5500
     const failsafe = setTimeout(() => {
       setRevealed(true)
       setIsLoading(false)
       clearScrollLock()
-    }, 5500)
+    }, failsafeMs)
     return () => clearTimeout(failsafe)
-  }, [])
+  }, [touchLike])
 
   useEffect(() => {
     bootLog('app:mount')
     clearScrollLock()
 
     const handlePageShow = (event) => {
-      if (event.persisted) {
-        clearScrollLock()
-        setRevealed(true)
-        setIsLoading(false)
-      }
+      if (!event.persisted) return
+      clearScrollLock()
+      setRevealed(true)
+      setIsLoading(false)
     }
 
     window.addEventListener('pageshow', handlePageShow)

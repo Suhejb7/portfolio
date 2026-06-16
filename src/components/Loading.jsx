@@ -7,21 +7,34 @@ import { lockScroll, unlockScroll } from '../utils/scrollLock'
 const LUX_EASE = [0.22, 1, 0.36, 1]
 const EXIT_EASE = [0.76, 0, 0.24, 1]
 
+export const isTouchLike = () => {
+  if (typeof window === 'undefined') return true
+  return window.matchMedia('(max-width: 1023px), (pointer: coarse)').matches
+}
+
+const useTouchLike = () => {
+  const ref = useRef(null)
+  if (ref.current === null) ref.current = isTouchLike()
+  return ref.current
+}
+
 const LoaderAtmosphere = ({ lite }) => (
   <div className="absolute inset-0 pointer-events-none overflow-hidden">
     <div className="absolute inset-0 bg-[#030014]" />
-
-    <motion.div
-      className="loader-glow loader-glow--primary"
-      animate={lite ? {} : { opacity: [0.4, 0.55, 0.4], scale: [1, 1.04, 1] }}
-      transition={{ duration: 7, repeat: Infinity, ease: 'easeInOut' }}
-    />
-    <motion.div
-      className="loader-glow loader-glow--secondary"
-      animate={lite ? {} : { opacity: [0.25, 0.38, 0.25] }}
-      transition={{ duration: 9, repeat: Infinity, ease: 'easeInOut', delay: 1.5 }}
-    />
-
+    {!lite && (
+      <>
+        <motion.div
+          className="loader-glow loader-glow--primary"
+          animate={{ opacity: [0.4, 0.55, 0.4], scale: [1, 1.04, 1] }}
+          transition={{ duration: 7, repeat: Infinity, ease: 'easeInOut' }}
+        />
+        <motion.div
+          className="loader-glow loader-glow--secondary"
+          animate={{ opacity: [0.25, 0.38, 0.25] }}
+          transition={{ duration: 9, repeat: Infinity, ease: 'easeInOut', delay: 1.5 }}
+        />
+      </>
+    )}
     <div className="loader-vignette" />
     <div className="absolute inset-0 opacity-[0.028] noise-overlay" />
   </div>
@@ -40,30 +53,8 @@ const LineReveal = ({ children, delay = 0, className = '' }) => (
   </span>
 )
 
-const isTouchLike = () => {
-  if (typeof window === 'undefined') return true
-  return window.matchMedia('(max-width: 1023px), (pointer: coarse)').matches
-}
-
-const Loading = ({ isLoading, onComplete, content, currentLanguage, duration = 3200 }) => {
-  const lang = currentLanguage || 'en'
-  const lite = usePreferReducedEffects()
-  const isMobile = useIsMobile()
-  const [active, setActive] = useState(isLoading)
-  const [passthrough, setPassthrough] = useState(false)
-  const hasRevealedRef = useRef(false)
-  const timingRef = useRef(null)
-
-  if (timingRef.current === null) {
-    const touchLike = isTouchLike()
-    timingRef.current = {
-      holdDuration: touchLike || lite ? duration * 0.45 : isMobile ? duration * 0.82 : duration,
-      exitDurationMs: touchLike || lite ? 650 : isMobile ? 850 : 1050,
-    }
-  }
-
-  const { holdDuration, exitDurationMs } = timingRef.current
-
+/** Safari-safe: no Framer opacity animations — content always painted. */
+const TouchLoader = ({ active, content, lang, holdMs, onDismiss }) => {
   const hero = content[lang]?.hero
   const name = hero?.title ?? 'Suhejb Kadrija'
   const role = hero?.subtitle ?? 'Full-Stack Developer'
@@ -71,59 +62,89 @@ const Loading = ({ isLoading, onComplete, content, currentLanguage, duration = 3
   const [first, ...rest] = name.split(' ')
   const last = rest.join(' ')
 
-  const revealApp = useCallback(() => {
-    if (hasRevealedRef.current) return
-    hasRevealedRef.current = true
-    bootLog('loader:reveal-app')
-    onComplete?.()
-  }, [onComplete])
-
-  const dismissLoader = useCallback(() => {
-    bootLog('loader:dismiss-start')
-    setPassthrough(true)
-    setActive(false)
-    revealApp()
-  }, [revealApp])
-
   useEffect(() => {
-    if (!isLoading) return
-    setActive(true)
-    setPassthrough(false)
-    bootLog('loader:active')
-  }, [isLoading])
+    if (!active) return undefined
+    bootLog('loader:touch-timer-start', { holdMs })
+    const timer = setTimeout(onDismiss, holdMs)
+    return () => clearTimeout(timer)
+  }, [active, holdMs, onDismiss])
+
+  if (!active) return null
+
+  return (
+    <div className="fixed inset-0 z-[200] flex items-center justify-center overflow-hidden bg-[#030014]">
+      <div className="absolute inset-0 loader-vignette pointer-events-none" />
+      <div className="absolute inset-0 opacity-[0.028] noise-overlay pointer-events-none" />
+
+      <div className="relative z-10 w-full max-w-4xl mx-auto px-6 sm:px-10 flex flex-col items-center text-center">
+        <div className="loader-accent-line mb-8 sm:mb-10" />
+
+        <h1 className="font-display font-bold tracking-[-0.045em] leading-[0.88] w-full">
+          <span className="block text-[clamp(2.75rem,13vw,5.5rem)] text-white">{first}</span>
+          {last && (
+            <span className="block text-[clamp(2.75rem,13vw,5.5rem)] gradient-text mt-1 sm:mt-1.5">
+              {last}
+            </span>
+          )}
+        </h1>
+
+        <p className="mt-6 sm:mt-8 text-[10px] sm:text-[11px] font-medium uppercase tracking-[0.34em] text-white/30">
+          {role}
+        </p>
+
+        {tagline && (
+          <p className="mt-4 sm:mt-5 max-w-md text-[13px] sm:text-sm text-white/20 leading-[1.65] tracking-[-0.01em]">
+            {tagline}
+          </p>
+        )}
+
+        <div className="loader-portrait mt-10 sm:mt-12">
+          <img src="/optimized/pfp.jpg" alt="" className="loader-portrait__img" decoding="async" />
+          <div className="loader-portrait__sheen" aria-hidden="true" />
+        </div>
+
+        <div className="loader-accent-line loader-accent-line--short mt-10 sm:mt-12" />
+      </div>
+    </div>
+  )
+}
+
+const DesktopLoader = ({
+  active,
+  passthrough,
+  lite,
+  isMobile,
+  exitDurationMs,
+  holdDuration,
+  isLoading,
+  content,
+  lang,
+  onDismiss,
+}) => {
+  const hero = content[lang]?.hero
+  const name = hero?.title ?? 'Suhejb Kadrija'
+  const role = hero?.subtitle ?? 'Full-Stack Developer'
+  const tagline = hero?.shortDescription ?? ''
+  const [first, ...rest] = name.split(' ')
+  const last = rest.join(' ')
+  const useSimpleExit = lite || isMobile
 
   useEffect(() => {
     if (!isLoading || !active) return undefined
-
-    bootLog('loader:timer-start', { holdDuration })
-
-    const dismissTimer = setTimeout(() => {
-      bootLog('loader:timer-fire')
-      dismissLoader()
-    }, holdDuration)
-
-    const failsafeTimer = setTimeout(() => {
-      bootLog('loader:failsafe-fire')
-      dismissLoader()
-    }, holdDuration + exitDurationMs + 500)
-
+    bootLog('loader:desktop-timer-start', { holdDuration })
+    const dismissTimer = setTimeout(onDismiss, holdDuration)
+    const failsafeTimer = setTimeout(onDismiss, holdDuration + exitDurationMs + 500)
     return () => {
       clearTimeout(dismissTimer)
       clearTimeout(failsafeTimer)
     }
-  }, [isLoading, active, holdDuration, exitDurationMs, dismissLoader])
+  }, [isLoading, active, holdDuration, exitDurationMs, onDismiss])
 
   useEffect(() => {
     if (!active) return undefined
-    bootLog('loader:scroll-lock')
     lockScroll()
-    return () => {
-      bootLog('loader:scroll-unlock')
-      unlockScroll()
-    }
+    return () => unlockScroll()
   }, [active])
-
-  const useSimpleExit = lite || isMobile
 
   return (
     <AnimatePresence mode="wait">
@@ -140,17 +161,13 @@ const Loading = ({ isLoading, onComplete, content, currentLanguage, duration = 3
           }}
         >
           <LoaderAtmosphere lite={lite} />
-
           <motion.div
             className="relative z-10 w-full max-w-4xl mx-auto px-6 sm:px-10 flex flex-col items-center text-center"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={
               useSimpleExit
-                ? {
-                    opacity: 0,
-                    transition: { duration: exitDurationMs / 1000, ease: LUX_EASE },
-                  }
+                ? { opacity: 0, transition: { duration: exitDurationMs / 1000, ease: LUX_EASE } }
                 : {
                     opacity: 0,
                     scale: 1.015,
@@ -167,12 +184,8 @@ const Loading = ({ isLoading, onComplete, content, currentLanguage, duration = 3
               animate={{ opacity: 1, scaleX: 1 }}
               transition={{ delay: 0.15, duration: 1.4, ease: LUX_EASE }}
             />
-
             <h1 className="font-display font-bold tracking-[-0.045em] leading-[0.88] w-full">
-              <LineReveal
-                delay={0.3}
-                className="text-[clamp(2.75rem,13vw,5.5rem)] text-white"
-              >
+              <LineReveal delay={0.3} className="text-[clamp(2.75rem,13vw,5.5rem)] text-white">
                 {first}
               </LineReveal>
               {last && (
@@ -184,7 +197,6 @@ const Loading = ({ isLoading, onComplete, content, currentLanguage, duration = 3
                 </LineReveal>
               )}
             </h1>
-
             <motion.p
               className="mt-6 sm:mt-8 text-[10px] sm:text-[11px] font-medium uppercase tracking-[0.34em] text-white/30"
               initial={{ opacity: 0, y: 14, filter: 'blur(6px)' }}
@@ -193,7 +205,6 @@ const Loading = ({ isLoading, onComplete, content, currentLanguage, duration = 3
             >
               {role}
             </motion.p>
-
             {tagline && (
               <motion.p
                 className="mt-4 sm:mt-5 max-w-md text-[13px] sm:text-sm text-white/20 leading-[1.65] tracking-[-0.01em]"
@@ -204,22 +215,15 @@ const Loading = ({ isLoading, onComplete, content, currentLanguage, duration = 3
                 {tagline}
               </motion.p>
             )}
-
             <motion.div
               className="loader-portrait mt-10 sm:mt-12"
               initial={{ opacity: 0, scale: 0.92, filter: 'blur(12px)' }}
               animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
               transition={{ delay: 1.25, duration: 1.15, ease: LUX_EASE }}
             >
-              <img
-                src="/optimized/pfp.jpg"
-                alt=""
-                className="loader-portrait__img"
-                decoding="async"
-              />
+              <img src="/optimized/pfp.jpg" alt="" className="loader-portrait__img" decoding="async" />
               <div className="loader-portrait__sheen" aria-hidden="true" />
             </motion.div>
-
             <motion.div
               className="loader-accent-line loader-accent-line--short mt-10 sm:mt-12"
               initial={{ opacity: 0 }}
@@ -230,6 +234,62 @@ const Loading = ({ isLoading, onComplete, content, currentLanguage, duration = 3
         </motion.div>
       )}
     </AnimatePresence>
+  )
+}
+
+const Loading = ({ isLoading, onComplete, content, currentLanguage, duration = 3200 }) => {
+  const touchLike = useTouchLike()
+  const lite = usePreferReducedEffects()
+  const isMobile = useIsMobile()
+  const lang = currentLanguage || 'en'
+  const [active, setActive] = useState(isLoading)
+  const hasRevealedRef = useRef(false)
+
+  const holdMs = touchLike ? duration * 0.82 : duration
+  const exitDurationMs = lite ? 650 : isMobile ? 850 : 1050
+
+  const revealApp = useCallback(() => {
+    if (hasRevealedRef.current) return
+    hasRevealedRef.current = true
+    bootLog('loader:reveal-app')
+    onComplete?.()
+  }, [onComplete])
+
+  const dismissLoader = useCallback(() => {
+    bootLog('loader:dismiss-start')
+    setActive(false)
+    revealApp()
+  }, [revealApp])
+
+  useEffect(() => {
+    if (isLoading) setActive(true)
+  }, [isLoading])
+
+  if (touchLike) {
+    return (
+      <TouchLoader
+        active={active && isLoading}
+        content={content}
+        lang={lang}
+        holdMs={holdMs}
+        onDismiss={dismissLoader}
+      />
+    )
+  }
+
+  return (
+    <DesktopLoader
+      active={active && isLoading}
+      passthrough={false}
+      lite={lite}
+      isMobile={isMobile}
+      exitDurationMs={exitDurationMs}
+      holdDuration={holdMs}
+      isLoading={isLoading}
+      content={content}
+      lang={lang}
+      onDismiss={dismissLoader}
+    />
   )
 }
 
