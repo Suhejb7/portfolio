@@ -1,28 +1,59 @@
-import { forwardRef, useRef, useEffect, useState } from 'react'
+import { forwardRef, useRef } from 'react'
 import { motion, useInView } from 'framer-motion'
 import { LUX_EASE, REVEAL_VIEWPORT } from '../../utils/animations'
-import { isTouchLikeDevice } from '../../utils/device'
 
-/** Plain wrapper — no Framer, no IO. Used on touch/mobile Safari. */
-const RevealStatic = forwardRef(function RevealStatic(
-  { children, className = '', ...props },
+const isTouchLikeViewport = () => {
+  if (typeof window === 'undefined') return true
+  return window.matchMedia('(max-width: 1023px), (pointer: coarse)').matches
+}
+
+/** Frozen on first render — avoids Safari flip-flop when hooks resolve late. */
+const useTouchLike = () => {
+  const ref = useRef(null)
+  if (ref.current === null) {
+    ref.current = isTouchLikeViewport()
+  }
+  return ref.current
+}
+
+/**
+ * Desktop: scroll-triggered fade-up via useInView.
+ * Mobile/touch: plain div, always visible — no IO, no opacity trap.
+ */
+const Reveal = forwardRef(function Reveal(
+  { children, className = '', delay = 0, y = 24, as: Component = motion.div, ...props },
   forwardedRef
 ) {
+  const touchLike = useTouchLike()
+
+  if (touchLike) {
+    return (
+      <div ref={forwardedRef} className={className} {...props}>
+        {children}
+      </div>
+    )
+  }
+
   return (
-    <div ref={forwardedRef} className={className} {...props}>
+    <RevealDesktop
+      ref={forwardedRef}
+      className={className}
+      delay={delay}
+      y={y}
+      as={Component}
+      {...props}
+    >
       {children}
-    </div>
+    </RevealDesktop>
   )
 })
 
-/** Desktop scroll reveal with failsafe. */
-const RevealAnimated = forwardRef(function RevealAnimated(
+const RevealDesktop = forwardRef(function RevealDesktop(
   { children, className = '', delay = 0, y = 24, as: Component = motion.div, ...props },
   forwardedRef
 ) {
   const localRef = useRef(null)
   const isInView = useInView(localRef, REVEAL_VIEWPORT)
-  const [forceVisible, setForceVisible] = useState(false)
 
   const setRefs = (node) => {
     localRef.current = node
@@ -30,32 +61,18 @@ const RevealAnimated = forwardRef(function RevealAnimated(
     else if (forwardedRef) forwardedRef.current = node
   }
 
-  useEffect(() => {
-    const timer = setTimeout(() => setForceVisible(true), 400)
-    return () => clearTimeout(timer)
-  }, [])
-
-  const visible = isInView || forceVisible
-
   return (
     <Component
       ref={setRefs}
       className={className}
       initial={{ opacity: 0, y }}
-      animate={visible ? { opacity: 1, y: 0 } : { opacity: 0, y }}
-      transition={{ duration: 0.85, delay: visible && !isInView ? 0 : delay, ease: LUX_EASE }}
+      animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y }}
+      transition={{ duration: 0.85, delay: isInView ? delay : 0, ease: LUX_EASE }}
       {...props}
     >
       {children}
     </Component>
   )
-})
-
-const touchLike = isTouchLikeDevice()
-const RevealImpl = touchLike ? RevealStatic : RevealAnimated
-
-const Reveal = forwardRef(function Reveal(props, ref) {
-  return <RevealImpl ref={ref} {...props} />
 })
 
 export default Reveal

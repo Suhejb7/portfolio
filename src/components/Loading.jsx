@@ -1,32 +1,26 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { usePreferReducedEffects, useIsMobile } from '../hooks/useMediaQuery'
 import { bootLog } from '../utils/bootLog'
-import { isTouchLikeDevice } from '../utils/device'
-import { lockScroll, clearScrollLock } from '../utils/scrollLock'
+import { lockScroll, unlockScroll } from '../utils/scrollLock'
 
 const LUX_EASE = [0.22, 1, 0.36, 1]
 const EXIT_EASE = [0.76, 0, 0.24, 1]
-
-const touchLike = isTouchLikeDevice()
 
 const LoaderAtmosphere = ({ lite }) => (
   <div className="absolute inset-0 pointer-events-none overflow-hidden">
     <div className="absolute inset-0 bg-[#030014]" />
 
-    {!lite && (
-      <>
-        <motion.div
-          className="loader-glow loader-glow--primary"
-          animate={{ opacity: [0.4, 0.55, 0.4], scale: [1, 1.04, 1] }}
-          transition={{ duration: 7, repeat: Infinity, ease: 'easeInOut' }}
-        />
-        <motion.div
-          className="loader-glow loader-glow--secondary"
-          animate={{ opacity: [0.25, 0.38, 0.25] }}
-          transition={{ duration: 9, repeat: Infinity, ease: 'easeInOut', delay: 1.5 }}
-        />
-      </>
-    )}
+    <motion.div
+      className="loader-glow loader-glow--primary"
+      animate={lite ? {} : { opacity: [0.4, 0.55, 0.4], scale: [1, 1.04, 1] }}
+      transition={{ duration: 7, repeat: Infinity, ease: 'easeInOut' }}
+    />
+    <motion.div
+      className="loader-glow loader-glow--secondary"
+      animate={lite ? {} : { opacity: [0.25, 0.38, 0.25] }}
+      transition={{ duration: 9, repeat: Infinity, ease: 'easeInOut', delay: 1.5 }}
+    />
 
     <div className="loader-vignette" />
     <div className="absolute inset-0 opacity-[0.028] noise-overlay" />
@@ -46,17 +40,25 @@ const LineReveal = ({ children, delay = 0, className = '' }) => (
   </span>
 )
 
+const isTouchLike = () => {
+  if (typeof window === 'undefined') return true
+  return window.matchMedia('(max-width: 1023px), (pointer: coarse)').matches
+}
+
 const Loading = ({ isLoading, onComplete, content, currentLanguage, duration = 3200 }) => {
   const lang = currentLanguage || 'en'
+  const lite = usePreferReducedEffects()
+  const isMobile = useIsMobile()
   const [active, setActive] = useState(isLoading)
   const [passthrough, setPassthrough] = useState(false)
   const hasRevealedRef = useRef(false)
   const timingRef = useRef(null)
 
   if (timingRef.current === null) {
+    const touchLike = isTouchLike()
     timingRef.current = {
-      holdDuration: touchLike ? duration * 0.45 : duration,
-      exitDurationMs: touchLike ? 650 : 1050,
+      holdDuration: touchLike || lite ? duration * 0.45 : isMobile ? duration * 0.82 : duration,
+      exitDurationMs: touchLike || lite ? 650 : isMobile ? 850 : 1050,
     }
   }
 
@@ -73,7 +75,6 @@ const Loading = ({ isLoading, onComplete, content, currentLanguage, duration = 3
     if (hasRevealedRef.current) return
     hasRevealedRef.current = true
     bootLog('loader:reveal-app')
-    clearScrollLock()
     onComplete?.()
   }, [onComplete])
 
@@ -96,8 +97,15 @@ const Loading = ({ isLoading, onComplete, content, currentLanguage, duration = 3
 
     bootLog('loader:timer-start', { holdDuration })
 
-    const dismissTimer = setTimeout(dismissLoader, holdDuration)
-    const failsafeTimer = setTimeout(dismissLoader, holdDuration + exitDurationMs + 400)
+    const dismissTimer = setTimeout(() => {
+      bootLog('loader:timer-fire')
+      dismissLoader()
+    }, holdDuration)
+
+    const failsafeTimer = setTimeout(() => {
+      bootLog('loader:failsafe-fire')
+      dismissLoader()
+    }, holdDuration + exitDurationMs + 500)
 
     return () => {
       clearTimeout(dismissTimer)
@@ -111,9 +119,11 @@ const Loading = ({ isLoading, onComplete, content, currentLanguage, duration = 3
     lockScroll()
     return () => {
       bootLog('loader:scroll-unlock')
-      clearScrollLock()
+      unlockScroll()
     }
   }, [active])
+
+  const useSimpleExit = lite || isMobile
 
   return (
     <AnimatePresence mode="wait">
@@ -129,16 +139,26 @@ const Loading = ({ isLoading, onComplete, content, currentLanguage, duration = 3
             transition: { duration: exitDurationMs / 1000, ease: EXIT_EASE },
           }}
         >
-          <LoaderAtmosphere lite={touchLike} />
+          <LoaderAtmosphere lite={lite} />
 
           <motion.div
             className="relative z-10 w-full max-w-4xl mx-auto px-6 sm:px-10 flex flex-col items-center text-center"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            exit={{
-              opacity: 0,
-              transition: { duration: exitDurationMs / 1000, ease: LUX_EASE },
-            }}
+            exit={
+              useSimpleExit
+                ? {
+                    opacity: 0,
+                    transition: { duration: exitDurationMs / 1000, ease: LUX_EASE },
+                  }
+                : {
+                    opacity: 0,
+                    scale: 1.015,
+                    y: -8,
+                    filter: 'blur(10px)',
+                    transition: { duration: exitDurationMs / 1000, ease: LUX_EASE },
+                  }
+            }
             transition={{ duration: 0.5, ease: LUX_EASE }}
           >
             <motion.div

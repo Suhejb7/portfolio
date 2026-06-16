@@ -19,10 +19,9 @@ export const getScrollLockY = () => (isScrollLocked() ? savedScrollY : window.sc
 
 /** Always clears inline scroll-lock styles — safe on refresh / bfcache restore. */
 export const clearScrollLock = () => {
-  const restoreY = isScrollLocked() ? savedScrollY : window.scrollY
   lockCount = 0
   resetBodyScrollStyles()
-  window.scrollTo(0, restoreY)
+  window.scrollTo(0, savedScrollY)
   window.lenis?.start?.()
 }
 
