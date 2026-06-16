@@ -1,13 +1,11 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { usePreferReducedEffects, useIsMobile } from '../hooks/useMediaQuery'
-import { bootLog } from '../utils/bootLog'
-import { lockScroll, unlockScroll } from '../utils/scrollLock'
 
 const LUX_EASE = [0.22, 1, 0.36, 1]
 const EXIT_EASE = [0.76, 0, 0.24, 1]
 
-export const MOBILE_HOLD_MS = 2400
+export const MOBILE_HOLD_MS = 2200
+export const DESKTOP_HOLD_MS = 4000
 
 export const isTouchLike = () => {
   if (typeof window === 'undefined') return true
@@ -15,9 +13,8 @@ export const isTouchLike = () => {
 }
 
 const useTouchLike = () => {
-  const ref = useRef(null)
-  if (ref.current === null) ref.current = isTouchLike()
-  return ref.current
+  if (typeof window === 'undefined') return true
+  return window.matchMedia('(max-width: 1023px), (pointer: coarse)').matches
 }
 
 const LoaderAtmosphere = ({ lite }) => (
@@ -55,7 +52,6 @@ const LineReveal = ({ children, delay = 0, className = '' }) => (
   </span>
 )
 
-/** Safari-safe: static markup only — timer lives in parent Loading. */
 const TouchLoader = ({ content, lang }) => {
   const hero = content[lang]?.hero
   const name = hero?.title ?? 'Suhejb Kadrija'
@@ -102,47 +98,26 @@ const TouchLoader = ({ content, lang }) => {
   )
 }
 
-const DesktopLoader = ({
-  lite,
-  isMobile,
-  exitDurationMs,
-  content,
-  lang,
-}) => {
+const DesktopLoader = ({ lite, isMobile, content, lang }) => {
   const hero = content[lang]?.hero
   const name = hero?.title ?? 'Suhejb Kadrija'
   const role = hero?.subtitle ?? 'Full-Stack Developer'
   const tagline = hero?.shortDescription ?? ''
   const [first, ...rest] = name.split(' ')
   const last = rest.join(' ')
-  const useSimpleExit = lite || isMobile
 
   return (
     <motion.div
       key="luxury-intro"
       className="fixed inset-0 z-[200] flex items-center justify-center overflow-hidden"
       initial={{ opacity: 1 }}
-      exit={{
-        opacity: 0,
-        transition: { duration: exitDurationMs / 1000, ease: EXIT_EASE },
-      }}
+      exit={{ opacity: 0, transition: { duration: 0.85, ease: EXIT_EASE } }}
     >
       <LoaderAtmosphere lite={lite} />
       <motion.div
         className="relative z-10 w-full max-w-4xl mx-auto px-6 sm:px-10 flex flex-col items-center text-center"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        exit={
-          useSimpleExit
-            ? { opacity: 0, transition: { duration: exitDurationMs / 1000, ease: LUX_EASE } }
-            : {
-                opacity: 0,
-                scale: 1.015,
-                y: -8,
-                filter: 'blur(10px)',
-                transition: { duration: exitDurationMs / 1000, ease: LUX_EASE },
-              }
-        }
         transition={{ duration: 0.5, ease: LUX_EASE }}
       >
         <motion.div
@@ -202,60 +177,14 @@ const DesktopLoader = ({
   )
 }
 
-const DESKTOP_HOLD_MS = 3800
-
-const Loading = ({ isLoading, onComplete, content, currentLanguage, duration = 3200 }) => {
+/** Presentational only — App owns the dismiss timer. */
+const Loading = ({ isLoading, content, currentLanguage }) => {
   const touchLike = useTouchLike()
   const lite = usePreferReducedEffects()
   const isMobile = useIsMobile()
   const lang = currentLanguage || 'en'
-  const [visible, setVisible] = useState(isLoading)
-  const hasCompletedRef = useRef(false)
-  const timerStartedRef = useRef(false)
-  const onCompleteRef = useRef(onComplete)
-  onCompleteRef.current = onComplete
 
-  const timingRef = useRef(null)
-  if (timingRef.current === null) {
-    timingRef.current = {
-      holdMs: touchLike ? MOBILE_HOLD_MS : duration || DESKTOP_HOLD_MS,
-      exitDurationMs: touchLike || lite ? 650 : isMobile ? 850 : 1050,
-    }
-  }
-
-  const { holdMs, exitDurationMs } = timingRef.current
-
-  const finish = useCallback(() => {
-    if (hasCompletedRef.current) return
-    hasCompletedRef.current = true
-    bootLog('loader:finish')
-    setVisible(false)
-    onCompleteRef.current?.()
-  }, [])
-
-  useEffect(() => {
-    if (!isLoading) {
-      setVisible(false)
-      return undefined
-    }
-
-    setVisible(true)
-
-    if (timerStartedRef.current) return undefined
-    timerStartedRef.current = true
-    bootLog('loader:timer-start', { holdMs })
-
-    if (!touchLike) lockScroll()
-
-    const dismissTimer = setTimeout(finish, holdMs)
-
-    return () => {
-      clearTimeout(dismissTimer)
-      if (!touchLike) unlockScroll()
-    }
-  }, [isLoading, touchLike, holdMs, finish])
-
-  if (!visible || !isLoading) return null
+  if (!isLoading) return null
 
   if (touchLike) {
     return <TouchLoader content={content} lang={lang} />
@@ -263,13 +192,7 @@ const Loading = ({ isLoading, onComplete, content, currentLanguage, duration = 3
 
   return (
     <AnimatePresence mode="wait">
-      <DesktopLoader
-        lite={lite}
-        isMobile={isMobile}
-        exitDurationMs={exitDurationMs}
-        content={content}
-        lang={lang}
-      />
+      <DesktopLoader lite={lite} isMobile={isMobile} content={content} lang={lang} />
     </AnimatePresence>
   )
 }

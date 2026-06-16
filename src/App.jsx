@@ -7,7 +7,7 @@ import Skills from './components/Skills'
 import Projects from './components/Projects'
 import Contact from './components/Contact'
 import Footer from './components/Footer'
-import Loading, { isTouchLike, MOBILE_HOLD_MS } from './components/Loading'
+import Loading, { isTouchLike, MOBILE_HOLD_MS, DESKTOP_HOLD_MS } from './components/Loading'
 import AnimatedBackground from './components/ui/AnimatedBackground'
 import ScrollProgress from './components/ui/ScrollProgress'
 import { content } from './data/content'
@@ -17,6 +17,8 @@ import { NAV_SECTIONS } from './data/nav'
 import { useIsMobile } from './hooks/useMediaQuery'
 import { bootLog } from './utils/bootLog'
 import { clearScrollLock, getScrollLockY, forceUnlockAndScrollTo } from './utils/scrollLock'
+
+const pageLoadAt = typeof performance !== 'undefined' ? performance.now() : 0
 
 function App() {
   const [activeSection, setActiveSection] = useState('home')
@@ -34,17 +36,26 @@ function App() {
     clearScrollLock()
   }, [])
 
-  const handleLoaderCompleteRef = useRef(handleLoaderComplete)
-  handleLoaderCompleteRef.current = handleLoaderComplete
+  const loaderDoneRef = useRef(false)
+  const touchLikeRef = useRef(isTouchLike())
+  const completeRef = useRef(handleLoaderComplete)
+  completeRef.current = handleLoaderComplete
 
-  const touchLike = typeof window !== 'undefined' && isTouchLike()
-
-  // Hard cap — never show loader longer than this on mobile.
+  // Wall-clock deadline — survives StrictMode remounts / Safari timer resets.
   useEffect(() => {
-    const failsafeMs = touchLike ? MOBILE_HOLD_MS + 600 : 5500
-    const failsafe = setTimeout(() => handleLoaderCompleteRef.current(), failsafeMs)
-    return () => clearTimeout(failsafe)
-  }, [touchLike])
+    const holdMs = touchLikeRef.current ? MOBILE_HOLD_MS : DESKTOP_HOLD_MS
+    const elapsed = performance.now() - pageLoadAt
+    const remaining = Math.max(0, holdMs - elapsed)
+
+    bootLog('app:loader-timer', { holdMs, elapsed, remaining })
+    const timer = setTimeout(() => {
+      if (loaderDoneRef.current) return
+      loaderDoneRef.current = true
+      completeRef.current()
+    }, remaining)
+
+    return () => clearTimeout(timer)
+  }, [])
 
   useEffect(() => {
     bootLog('app:mount')
@@ -52,6 +63,7 @@ function App() {
 
     const handlePageShow = (event) => {
       if (!event.persisted) return
+      loaderDoneRef.current = true
       clearScrollLock()
       setRevealed(true)
       setIsLoading(false)
@@ -126,10 +138,8 @@ function App() {
     <SmoothScroll>
       <Loading
         isLoading={isLoading}
-        onComplete={handleLoaderComplete}
         content={content}
         currentLanguage={currentLanguage}
-        duration={isMobile ? 3800 : 4200}
       />
 
       <ScrollProgress />
