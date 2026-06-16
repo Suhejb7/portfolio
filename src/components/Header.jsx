@@ -5,6 +5,7 @@ import { NAV_SECTIONS } from '../data/nav'
 import MagneticButton from './ui/MagneticButton'
 import HamburgerIcon from './ui/HamburgerIcon'
 import { useIsMobile } from '../hooks/useMediaQuery'
+import { lockScroll, clearScrollLock } from '../utils/scrollLock'
 
 const menuVariants = {
   closed: { opacity: 0 },
@@ -49,16 +50,11 @@ const Header = ({
 
   useEffect(() => {
     if (isMobileMenuOpen) {
-      document.body.style.overflow = 'hidden'
-      window.lenis?.stop()
+      lockScroll()
     } else {
-      document.body.style.overflow = ''
-      window.lenis?.start()
+      clearScrollLock()
     }
-    return () => {
-      document.body.style.overflow = ''
-      window.lenis?.start()
-    }
+    return () => clearScrollLock()
   }, [isMobileMenuOpen])
 
   return (

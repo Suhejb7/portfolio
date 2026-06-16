@@ -1,6 +1,8 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { usePreferReducedEffects, useIsMobile } from '../hooks/useMediaQuery'
+import { bootLog } from '../utils/bootLog'
+import { lockScroll, clearScrollLock } from '../utils/scrollLock'
 
 const LUX_EASE = [0.22, 1, 0.36, 1]
 const EXIT_EASE = [0.76, 0, 0.24, 1]
@@ -43,8 +45,10 @@ const Loading = ({ isLoading, onComplete, content, currentLanguage, duration = 3
   const lite = usePreferReducedEffects()
   const isMobile = useIsMobile()
   const [active, setActive] = useState(isLoading)
+  const hasRevealedRef = useRef(false)
 
   const holdDuration = lite ? duration * 0.45 : isMobile ? duration * 0.82 : duration
+  const exitDurationMs = lite ? 650 : isMobile ? 850 : 1050
 
   const hero = content[lang]?.hero
   const name = hero?.title ?? 'Suhejb Kadrija'
@@ -53,18 +57,68 @@ const Loading = ({ isLoading, onComplete, content, currentLanguage, duration = 3
   const [first, ...rest] = name.split(' ')
   const last = rest.join(' ')
 
+  const revealApp = useCallback(() => {
+    if (hasRevealedRef.current) return
+    hasRevealedRef.current = true
+    bootLog('loader:reveal-app')
+    onComplete?.()
+  }, [onComplete])
+
+  const dismissLoader = useCallback(() => {
+    bootLog('loader:dismiss-start')
+    setActive(false)
+    revealApp()
+  }, [revealApp])
+
   useEffect(() => {
-    if (isLoading) setActive(true)
+    if (isLoading) {
+      setActive(true)
+      hasRevealedRef.current = false
+      bootLog('loader:active')
+    }
   }, [isLoading])
 
   useEffect(() => {
-    if (!isLoading || !active) return
-    const timer = setTimeout(() => setActive(false), holdDuration)
-    return () => clearTimeout(timer)
-  }, [isLoading, active, holdDuration])
+    if (!isLoading || !active) return undefined
+
+    bootLog('loader:timer-start', { holdDuration })
+
+    const dismissTimer = setTimeout(() => {
+      bootLog('loader:timer-fire')
+      dismissLoader()
+    }, holdDuration)
+
+    const failsafeTimer = setTimeout(() => {
+      bootLog('loader:failsafe-fire')
+      dismissLoader()
+    }, holdDuration + exitDurationMs + 500)
+
+    return () => {
+      clearTimeout(dismissTimer)
+      clearTimeout(failsafeTimer)
+    }
+  }, [isLoading, active, holdDuration, exitDurationMs, dismissLoader])
+
+  useEffect(() => {
+    if (!active) return undefined
+    bootLog('loader:scroll-lock')
+    lockScroll()
+    return () => {
+      bootLog('loader:scroll-unlock')
+      clearScrollLock()
+    }
+  }, [active])
+
+  const useSimpleExit = lite || isMobile
 
   return (
-    <AnimatePresence mode="wait" onExitComplete={onComplete}>
+    <AnimatePresence
+      mode="wait"
+      onExitComplete={() => {
+        bootLog('loader:exit-complete')
+        revealApp()
+      }}
+    >
       {active && (
         <motion.div
           key="luxury-intro"
@@ -72,7 +126,7 @@ const Loading = ({ isLoading, onComplete, content, currentLanguage, duration = 3
           initial={{ opacity: 1 }}
           exit={{
             opacity: 0,
-            transition: { duration: lite ? 0.65 : 1.05, ease: EXIT_EASE },
+            transition: { duration: exitDurationMs / 1000, ease: EXIT_EASE },
           }}
         >
           <LoaderAtmosphere lite={lite} />
@@ -81,13 +135,20 @@ const Loading = ({ isLoading, onComplete, content, currentLanguage, duration = 3
             className="relative z-10 w-full max-w-4xl mx-auto px-6 sm:px-10 flex flex-col items-center text-center"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            exit={{
-              opacity: 0,
-              scale: lite ? 1 : 1.015,
-              y: lite ? 0 : -8,
-              filter: lite ? 'blur(0px)' : 'blur(10px)',
-              transition: { duration: lite ? 0.55 : 0.95, ease: LUX_EASE },
-            }}
+            exit={
+              useSimpleExit
+                ? {
+                    opacity: 0,
+                    transition: { duration: exitDurationMs / 1000, ease: LUX_EASE },
+                  }
+                : {
+                    opacity: 0,
+                    scale: 1.015,
+                    y: -8,
+                    filter: 'blur(10px)',
+                    transition: { duration: exitDurationMs / 1000, ease: LUX_EASE },
+                  }
+            }
             transition={{ duration: 0.5, ease: LUX_EASE }}
           >
             <motion.div

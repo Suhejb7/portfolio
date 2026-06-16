@@ -17,6 +17,8 @@ import { projects } from './data/projects'
 import { NAV_SECTIONS } from './data/nav'
 import { useIsMobile } from './hooks/useMediaQuery'
 import { LUX_EASE } from './utils/animations'
+import { bootLog } from './utils/bootLog'
+import { clearScrollLock } from './utils/scrollLock'
 
 function App() {
   const [activeSection, setActiveSection] = useState('home')
@@ -28,9 +30,24 @@ function App() {
   const isMobile = useIsMobile()
 
   const handleLoaderComplete = useCallback(() => {
+    bootLog('app:handle-loader-complete')
     setIsLoading(false)
     setRevealed(true)
+    clearScrollLock()
   }, [])
+
+  useEffect(() => {
+    bootLog('app:mount')
+    clearScrollLock()
+    return () => bootLog('app:unmount')
+  }, [])
+
+  useEffect(() => {
+    if (revealed) {
+      bootLog('app:revealed')
+      clearScrollLock()
+    }
+  }, [revealed])
 
   useEffect(() => {
     const handleScroll = () => {
@@ -112,18 +129,18 @@ function App() {
       />
 
       <motion.div
-        className="relative min-h-screen z-[1] overflow-x-hidden w-full"
-        initial={{ opacity: 0, scale: 1.012, filter: 'blur(8px)' }}
-        animate={{
-          opacity: revealed ? 1 : 0,
-          scale: revealed ? 1 : 1.012,
-          filter: revealed ? 'blur(0px)' : 'blur(8px)',
-        }}
+        className={`w-full z-[1] ${revealed ? 'relative min-h-screen' : 'fixed inset-0 overflow-hidden'}`}
+        initial={false}
+        animate={{ opacity: revealed ? 1 : 0 }}
         transition={{ duration: 1.15, ease: LUX_EASE }}
+        style={{
+          filter: revealed ? 'none' : 'blur(8px)',
+          pointerEvents: revealed ? 'auto' : 'none',
+        }}
       >
         <AnimatedBackground />
 
-        <main className="overflow-x-hidden">
+        <main>
           <Hero
             content={content}
             currentLanguage={currentLanguage}
