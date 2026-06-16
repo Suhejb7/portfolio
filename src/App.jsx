@@ -127,13 +127,11 @@ function App() {
       />
 
       <div
-        key={revealed ? 'revealed' : 'pending'}
         className={`w-full z-[1] ${
           revealed ? 'relative min-h-screen opacity-100' : 'fixed inset-0 overflow-hidden opacity-0 pointer-events-none'
         }`}
         style={{
-          filter: revealed ? 'none' : 'blur(8px)',
-          transition: 'opacity 1.15s cubic-bezier(0.22, 1, 0.36, 1), filter 1.15s cubic-bezier(0.22, 1, 0.36, 1)',
+          transition: 'opacity 1.15s cubic-bezier(0.22, 1, 0.36, 1)',
         }}
       >
         <AnimatedBackground />

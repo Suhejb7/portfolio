@@ -45,6 +45,7 @@ const Loading = ({ isLoading, onComplete, content, currentLanguage, duration = 3
   const lite = usePreferReducedEffects()
   const isMobile = useIsMobile()
   const [active, setActive] = useState(isLoading)
+  const [passthrough, setPassthrough] = useState(false)
   const hasRevealedRef = useRef(false)
 
   const holdDuration = lite ? duration * 0.45 : isMobile ? duration * 0.82 : duration
@@ -66,6 +67,7 @@ const Loading = ({ isLoading, onComplete, content, currentLanguage, duration = 3
 
   const dismissLoader = useCallback(() => {
     bootLog('loader:dismiss-start')
+    setPassthrough(true)
     setActive(false)
     revealApp()
   }, [revealApp])
@@ -73,6 +75,7 @@ const Loading = ({ isLoading, onComplete, content, currentLanguage, duration = 3
   useEffect(() => {
     if (isLoading) {
       setActive(true)
+      setPassthrough(false)
       hasRevealedRef.current = false
       bootLog('loader:active')
     }
@@ -122,7 +125,9 @@ const Loading = ({ isLoading, onComplete, content, currentLanguage, duration = 3
       {active && (
         <motion.div
           key="luxury-intro"
-          className="fixed inset-0 z-[200] flex items-center justify-center overflow-hidden"
+          className={`fixed inset-0 z-[200] flex items-center justify-center overflow-hidden ${
+            passthrough ? 'pointer-events-none' : ''
+          }`}
           initial={{ opacity: 1 }}
           exit={{
             opacity: 0,
