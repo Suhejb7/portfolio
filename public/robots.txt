@@ -1,0 +1,11 @@
+# robots.txt for Suhejb Kadrija Portfolio
+# Allow all search engines to crawl the site
+
+User-agent: *
+Allow: /
+
+# Sitemap location
+Sitemap: https://suhejb.com/sitemap.xml
+
+# Crawl delay (optional)
+Crawl-delay: 1
