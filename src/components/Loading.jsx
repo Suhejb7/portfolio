@@ -4,9 +4,6 @@ import { usePreferReducedEffects, useIsMobile } from '../hooks/useMediaQuery'
 const LUX_EASE = [0.22, 1, 0.36, 1]
 const EXIT_EASE = [0.76, 0, 0.24, 1]
 
-export const MOBILE_HOLD_MS = 2200
-export const DESKTOP_HOLD_MS = 4000
-
 export const isTouchLike = () => {
   if (typeof window === 'undefined') return true
   return window.matchMedia('(max-width: 1023px), (pointer: coarse)').matches
@@ -177,7 +174,7 @@ const DesktopLoader = ({ lite, isMobile, content, lang }) => {
   )
 }
 
-/** Presentational only — App owns the dismiss timer. */
+/** Presentational only — loaderSchedule.js owns the 2200ms dismiss timer. */
 const Loading = ({ isLoading, content, currentLanguage }) => {
   const touchLike = useTouchLike()
   const lite = usePreferReducedEffects()

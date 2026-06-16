@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import SmoothScroll from './components/SmoothScroll'
 import Header from './components/Header'
 import Hero from './components/Hero'
@@ -7,7 +7,7 @@ import Skills from './components/Skills'
 import Projects from './components/Projects'
 import Contact from './components/Contact'
 import Footer from './components/Footer'
-import Loading, { isTouchLike, MOBILE_HOLD_MS, DESKTOP_HOLD_MS } from './components/Loading'
+import Loading from './components/Loading'
 import AnimatedBackground from './components/ui/AnimatedBackground'
 import ScrollProgress from './components/ui/ScrollProgress'
 import { content } from './data/content'
@@ -15,10 +15,8 @@ import { skills } from './data/skills'
 import { projects } from './data/projects'
 import { NAV_SECTIONS } from './data/nav'
 import { useIsMobile } from './hooks/useMediaQuery'
-import { bootLog } from './utils/bootLog'
+import { subscribeLoaderReveal } from './utils/loaderSchedule'
 import { clearScrollLock, getScrollLockY, forceUnlockAndScrollTo } from './utils/scrollLock'
-
-const pageLoadAt = typeof performance !== 'undefined' ? performance.now() : 0
 
 function App() {
   const [activeSection, setActiveSection] = useState('home')
@@ -29,59 +27,17 @@ function App() {
   const [currentLanguage, setCurrentLanguage] = useState('en')
   const isMobile = useIsMobile()
 
-  const handleLoaderComplete = useCallback(() => {
-    bootLog('app:handle-loader-complete')
-    setIsLoading(false)
-    setRevealed(true)
-    clearScrollLock()
-  }, [])
-
-  const loaderDoneRef = useRef(false)
-  const touchLikeRef = useRef(isTouchLike())
-  const completeRef = useRef(handleLoaderComplete)
-  completeRef.current = handleLoaderComplete
-
-  // Wall-clock deadline — survives StrictMode remounts / Safari timer resets.
   useEffect(() => {
-    const holdMs = touchLikeRef.current ? MOBILE_HOLD_MS : DESKTOP_HOLD_MS
-    const elapsed = performance.now() - pageLoadAt
-    const remaining = Math.max(0, holdMs - elapsed)
-
-    bootLog('app:loader-timer', { holdMs, elapsed, remaining })
-    const timer = setTimeout(() => {
-      if (loaderDoneRef.current) return
-      loaderDoneRef.current = true
-      completeRef.current()
-    }, remaining)
-
-    return () => clearTimeout(timer)
-  }, [])
-
-  useEffect(() => {
-    bootLog('app:mount')
     clearScrollLock()
 
-    const handlePageShow = (event) => {
-      if (!event.persisted) return
-      loaderDoneRef.current = true
-      clearScrollLock()
-      setRevealed(true)
+    const revealSite = () => {
       setIsLoading(false)
-    }
-
-    window.addEventListener('pageshow', handlePageShow)
-    return () => {
-      bootLog('app:unmount')
-      window.removeEventListener('pageshow', handlePageShow)
-    }
-  }, [])
-
-  useEffect(() => {
-    if (revealed) {
-      bootLog('app:revealed')
+      setRevealed(true)
       clearScrollLock()
     }
-  }, [revealed])
+
+    return subscribeLoaderReveal(revealSite)
+  }, [])
 
   useEffect(() => {
     const handleScroll = () => {
