@@ -1,8 +1,7 @@
 import { useMemo } from 'react'
-import { motion } from 'framer-motion'
 import SpotlightCard from './ui/SpotlightCard'
+import Reveal from './ui/Reveal'
 import { skills } from '../data/skills'
-import { EASE } from '../utils/animations'
 
 const flattenSkills = (categoryLabels) =>
   Object.entries(skills).flatMap(([category, items]) =>
@@ -90,13 +89,7 @@ const Skills = ({ content, currentLanguage }) => {
       <SkillsAmbient />
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <motion.div
-          className="max-w-3xl mb-8 sm:mb-16 lg:mb-20"
-          initial={{ opacity: 0, y: 28 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: '-40px' }}
-          transition={{ duration: 0.9, ease: EASE }}
-        >
+        <Reveal className="max-w-3xl mb-8 sm:mb-16 lg:mb-20">
           <span className="inline-flex items-center gap-2.5 lg:gap-3 text-[9px] lg:text-xs font-semibold uppercase tracking-[0.22em] text-accent mb-3.5 lg:mb-6">
             <span className="w-6 lg:w-8 h-px bg-gradient-to-r from-accent to-accent-secondary" />
             02 — Skills
@@ -109,28 +102,20 @@ const Skills = ({ content, currentLanguage }) => {
           <p className="mt-3 sm:mt-5 lg:mt-7 text-sm lg:text-lg text-white/40 leading-relaxed max-w-xl">
             {t.subtitle}
           </p>
-        </motion.div>
+        </Reveal>
 
-        <motion.div
-          className="relative -mx-4 sm:-mx-6 lg:-mx-8"
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: '-40px' }}
-          transition={{ duration: 1, ease: EASE }}
-        >
+        <Reveal className="relative -mx-4 sm:-mx-6 lg:-mx-8" y={20}>
           <InfiniteMarquee items={skillItems} />
-        </motion.div>
+        </Reveal>
 
-        <motion.div
+        <Reveal
           className="mt-6 sm:mt-10 lg:mt-12 flex items-center justify-between text-[10px] lg:text-xs text-white/25 tracking-wide"
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          transition={{ delay: 0.2, duration: 0.8, ease: EASE }}
+          y={0}
+          delay={0.2}
         >
           <span>{skillItems.length} technologies</span>
           <span className="hidden sm:inline text-white/20">Hover to pause</span>
-        </motion.div>
+        </Reveal>
       </div>
     </section>
   )

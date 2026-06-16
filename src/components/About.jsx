@@ -1,13 +1,13 @@
 import { useEffect, useRef, useState } from 'react'
-import { motion, useInView } from 'framer-motion'
+import { useInView } from 'framer-motion'
 import { GraduationCap } from 'lucide-react'
 import SectionHeading from './ui/SectionHeading'
-
-const LUX_EASE = [0.22, 1, 0.36, 1]
+import Reveal from './ui/Reveal'
+import { REVEAL_VIEWPORT } from '../utils/animations'
 
 const Counter = ({ value, suffix = '' }) => {
   const ref = useRef(null)
-  const isInView = useInView(ref, { once: true })
+  const isInView = useInView(ref, REVEAL_VIEWPORT)
   const [count, setCount] = useState(0)
 
   useEffect(() => {
@@ -37,13 +37,7 @@ const Counter = ({ value, suffix = '' }) => {
 }
 
 const AboutEditorialPanel = ({ t, stats, delay = 0 }) => (
-  <motion.div
-    className="about-panel"
-    initial={{ opacity: 0, y: 28 }}
-    whileInView={{ opacity: 1, y: 0 }}
-    viewport={{ once: true, margin: '-40px' }}
-    transition={{ duration: 0.9, delay, ease: LUX_EASE }}
-  >
+  <Reveal className="about-panel" delay={delay}>
     <div className="about-panel__inner">
       <div className="about-metrics">
         {stats.map((stat) => (
@@ -81,17 +75,11 @@ const AboutEditorialPanel = ({ t, stats, delay = 0 }) => (
         </div>
       </div>
     </div>
-  </motion.div>
+  </Reveal>
 )
 
 const AboutNarrative = ({ t, heroDesc, delay = 0.08 }) => (
-  <motion.div
-    className="space-y-6 sm:space-y-7 lg:space-y-8"
-    initial={{ opacity: 0, y: 28 }}
-    whileInView={{ opacity: 1, y: 0 }}
-    viewport={{ once: true, margin: '-40px' }}
-    transition={{ duration: 0.9, delay, ease: LUX_EASE }}
-  >
+  <Reveal className="space-y-6 sm:space-y-7 lg:space-y-8" delay={delay}>
     <p className="about-narrative__lead">{t.description}</p>
 
     <div className="about-narrative__quote">
@@ -99,7 +87,7 @@ const AboutNarrative = ({ t, heroDesc, delay = 0.08 }) => (
     </div>
 
     <p className="about-narrative__philosophy">{t.philosophy}</p>
-  </motion.div>
+  </Reveal>
 )
 
 const About = ({ content, currentLanguage, projectCount, skillCount }) => {

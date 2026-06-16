@@ -4,13 +4,11 @@ import { ArrowUpRight, ArrowRight } from 'lucide-react'
 import SectionHeading from './ui/SectionHeading'
 import SpotlightCard from './ui/SpotlightCard'
 import MagneticButton from './ui/MagneticButton'
-import { fadeUp } from '../utils/animations'
+import Reveal from './ui/Reveal'
 
 const openLink = (url) => {
   if (url && url !== '#') window.open(url, '_blank', 'noopener,noreferrer')
 }
-
-const LUX_EASE = [0.22, 1, 0.36, 1]
 
 const ProjectCard = ({ project, index, t }) => {
   const cardRef = useRef(null)
@@ -21,15 +19,7 @@ const ProjectCard = ({ project, index, t }) => {
   const imageY = useTransform(scrollYProgress, [0, 1], ['4%', '-4%'])
 
   return (
-  <motion.div
-    ref={cardRef}
-    initial="hidden"
-    whileInView="visible"
-    viewport={{ once: true, margin: '-40px' }}
-    variants={fadeUp}
-    custom={index * 0.08}
-    transition={{ duration: 0.9, ease: LUX_EASE }}
-  >
+  <Reveal ref={cardRef} delay={index * 0.08} y={32}>
     <SpotlightCard variant="showcase" className="group project-showcase overflow-hidden rounded-2xl lg:rounded-[1.25rem]">
       <div
         className={`grid grid-cols-1 gap-0 lg:items-center ${
@@ -139,7 +129,7 @@ const ProjectCard = ({ project, index, t }) => {
         </div>
       </div>
     </SpotlightCard>
-  </motion.div>
+  </Reveal>
   )
 }
 

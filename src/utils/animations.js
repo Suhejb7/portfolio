@@ -1,6 +1,9 @@
 export const EASE = [0.16, 1, 0.3, 1]
 export const LUX_EASE = [0.22, 1, 0.36, 1]
 
+/** Safari-safe IO config — no negative margins (break on iOS with transformed ancestors). */
+export const REVEAL_VIEWPORT = { once: true, amount: 0.1 }
+
 export const fadeUp = {
   hidden: { opacity: 0, y: 32 },
   visible: (delay = 0) => ({

@@ -1,17 +1,10 @@
-import { motion } from 'framer-motion'
-import { fadeUp } from '../../utils/animations'
+import Reveal from './Reveal'
 
 const SectionHeading = ({ label, title, align = 'left', className = '' }) => {
   const isCenter = align === 'center'
 
   return (
-    <motion.div
-      className={`mb-10 sm:mb-14 md:mb-20 ${isCenter ? 'text-center' : ''} ${className}`}
-      initial="hidden"
-      whileInView="visible"
-      viewport={{ once: true, margin: '-40px' }}
-      variants={fadeUp}
-    >
+    <Reveal className={`mb-10 sm:mb-14 md:mb-20 ${isCenter ? 'text-center' : ''} ${className}`} y={32}>
       {label && (
         <span className={`inline-flex items-center gap-2 text-[10px] sm:text-xs font-semibold uppercase tracking-[0.15em] sm:tracking-[0.2em] text-accent mb-3 sm:mb-4 ${isCenter ? 'justify-center flex-wrap' : ''}`}>
           <span className="w-6 sm:w-8 h-px bg-gradient-to-r from-accent to-accent-secondary" />
@@ -23,7 +16,7 @@ const SectionHeading = ({ label, title, align = 'left', className = '' }) => {
         {title}
       </h2>
       <div className={`mt-4 sm:mt-5 h-px w-16 sm:w-24 bg-gradient-to-r from-accent via-accent-secondary to-transparent ${isCenter ? 'mx-auto' : ''}`} />
-    </motion.div>
+    </Reveal>
   )
 }
 

@@ -1,17 +1,9 @@
 import { motion } from 'framer-motion'
 import { Linkedin, Mail, Instagram, ArrowUpRight } from 'lucide-react'
 import { NAV_SECTIONS } from '../data/nav'
+import Reveal from './ui/Reveal'
 
 const LUX_EASE = [0.22, 1, 0.36, 1]
-
-const fadeUp = {
-  hidden: { opacity: 0, y: 20 },
-  visible: (delay = 0) => ({
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.85, delay, ease: LUX_EASE },
-  }),
-}
 
 const Footer = ({ content, currentLanguage }) => {
   const t = content[currentLanguage].footer
@@ -37,40 +29,18 @@ const Footer = ({ content, currentLanguage }) => {
       <div className="absolute inset-0 opacity-[0.02] noise-overlay pointer-events-none" aria-hidden="true" />
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 footer-inner relative">
-        <motion.div
-          className="footer-closing"
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: '-40px' }}
-          variants={fadeUp}
-          custom={0}
-        >
+        <Reveal className="footer-closing">
           <h2 className="footer-closing__statement">{t.closingStatement}</h2>
           <div className="footer-closing__line" aria-hidden="true" />
-        </motion.div>
+        </Reveal>
 
         <div className="footer-main">
-          <motion.div
-            className="footer-brand"
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: '-40px' }}
-            variants={fadeUp}
-            custom={0.06}
-          >
+          <Reveal className="footer-brand" delay={0.06}>
             <p className="footer-brand__name gradient-text">Suhejb Kadrija</p>
             <p className="footer-brand__desc">{t.description}</p>
-          </motion.div>
+          </Reveal>
 
-          <motion.nav
-            className="footer-nav"
-            aria-label={t.quickLinks}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: '-40px' }}
-            variants={fadeUp}
-            custom={0.1}
-          >
+          <Reveal as={motion.nav} className="footer-nav" aria-label={t.quickLinks} delay={0.1}>
             <h4 className="footer-label">{t.quickLinks}</h4>
             <ul className="footer-nav__list">
               {NAV_SECTIONS.filter((id) => id !== 'home').map((id) => (
@@ -86,16 +56,9 @@ const Footer = ({ content, currentLanguage }) => {
                 </li>
               ))}
             </ul>
-          </motion.nav>
+          </Reveal>
 
-          <motion.div
-            className="footer-connect"
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: '-40px' }}
-            variants={fadeUp}
-            custom={0.14}
-          >
+          <Reveal className="footer-connect" delay={0.14}>
             <h4 className="footer-label">{t.connect}</h4>
             <div className="footer-social">
               {socialLinks.map(({ href, icon: Icon, label }) => (
@@ -113,21 +76,15 @@ const Footer = ({ content, currentLanguage }) => {
                 </motion.a>
               ))}
             </div>
-          </motion.div>
+          </Reveal>
         </div>
 
-        <motion.div
-          className="footer-end"
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.9, delay: 0.15, ease: LUX_EASE }}
-        >
+        <Reveal className="footer-end" y={0} delay={0.15}>
           <div className="footer-end__divider" aria-hidden="true" />
           <div className="footer-end__bar">
             <p className="footer-copyright">{t.copyright}</p>
           </div>
-        </motion.div>
+        </Reveal>
       </div>
 
       <div className="footer-bottom-fade" aria-hidden="true" />

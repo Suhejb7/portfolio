@@ -5,6 +5,7 @@ import emailjs from '@emailjs/browser'
 import SectionHeading from './ui/SectionHeading'
 import SpotlightCard from './ui/SpotlightCard'
 import MagneticButton from './ui/MagneticButton'
+import Reveal from './ui/Reveal'
 
 const LUX_EASE = [0.22, 1, 0.36, 1]
 
@@ -81,13 +82,7 @@ const Contact = ({ content, currentLanguage }) => {
         />
 
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 sm:gap-8 lg:gap-10">
-          <motion.div
-            className="lg:col-span-3 order-2 lg:order-1"
-            initial={{ opacity: 0, y: 28 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-40px' }}
-            transition={{ duration: 0.85, ease: LUX_EASE }}
-          >
+          <Reveal className="lg:col-span-3 order-2 lg:order-1">
             <SpotlightCard variant="showcase" className="contact-panel contact-panel--form overflow-hidden">
               <form onSubmit={handleSubmit} className="relative z-10 space-y-4 sm:space-y-5">
                 {[
@@ -170,15 +165,9 @@ const Contact = ({ content, currentLanguage }) => {
                 </MagneticButton>
               </form>
             </SpotlightCard>
-          </motion.div>
+          </Reveal>
 
-          <motion.div
-            className="lg:col-span-2 order-1 lg:order-2"
-            initial={{ opacity: 0, y: 28 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-40px' }}
-            transition={{ duration: 0.85, delay: 0.08, ease: LUX_EASE }}
-          >
+          <Reveal className="lg:col-span-2 order-1 lg:order-2" delay={0.08}>
             <SpotlightCard variant="showcase" className="contact-panel contact-panel--aside overflow-hidden">
               <div className="relative z-10">
                 <h3 className="contact-panel-title">{t.contactInfo}</h3>
@@ -220,7 +209,7 @@ const Contact = ({ content, currentLanguage }) => {
                 </div>
               </div>
             </SpotlightCard>
-          </motion.div>
+          </Reveal>
         </div>
       </div>
     </section>

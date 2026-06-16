@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback } from 'react'
-import { motion } from 'framer-motion'
 import SmoothScroll from './components/SmoothScroll'
 import Header from './components/Header'
 import Hero from './components/Hero'
@@ -16,7 +15,6 @@ import { skills } from './data/skills'
 import { projects } from './data/projects'
 import { NAV_SECTIONS } from './data/nav'
 import { useIsMobile } from './hooks/useMediaQuery'
-import { LUX_EASE } from './utils/animations'
 import { bootLog } from './utils/bootLog'
 import { clearScrollLock } from './utils/scrollLock'
 
@@ -128,14 +126,14 @@ function App() {
         revealed={revealed}
       />
 
-      <motion.div
-        className={`w-full z-[1] ${revealed ? 'relative min-h-screen' : 'fixed inset-0 overflow-hidden'}`}
-        initial={false}
-        animate={{ opacity: revealed ? 1 : 0 }}
-        transition={{ duration: 1.15, ease: LUX_EASE }}
+      <div
+        key={revealed ? 'revealed' : 'pending'}
+        className={`w-full z-[1] ${
+          revealed ? 'relative min-h-screen opacity-100' : 'fixed inset-0 overflow-hidden opacity-0 pointer-events-none'
+        }`}
         style={{
           filter: revealed ? 'none' : 'blur(8px)',
-          pointerEvents: revealed ? 'auto' : 'none',
+          transition: 'opacity 1.15s cubic-bezier(0.22, 1, 0.36, 1), filter 1.15s cubic-bezier(0.22, 1, 0.36, 1)',
         }}
       >
         <AnimatedBackground />
@@ -175,7 +173,7 @@ function App() {
           content={content}
           currentLanguage={currentLanguage}
         />
-      </motion.div>
+      </div>
     </SmoothScroll>
   )
 }
