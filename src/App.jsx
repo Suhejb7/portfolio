@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import SmoothScroll from './components/SmoothScroll'
 import Header from './components/Header'
 import Hero from './components/Hero'
@@ -34,16 +34,15 @@ function App() {
     clearScrollLock()
   }, [])
 
+  const handleLoaderCompleteRef = useRef(handleLoaderComplete)
+  handleLoaderCompleteRef.current = handleLoaderComplete
+
   const touchLike = typeof window !== 'undefined' && isTouchLike()
 
-  // Failsafe: never leave the app stuck behind the loader (Safari refresh).
+  // Backup if the loader timer is interrupted (Safari refresh / hook churn).
   useEffect(() => {
-    const failsafeMs = touchLike ? 2200 : 5500
-    const failsafe = setTimeout(() => {
-      setRevealed(true)
-      setIsLoading(false)
-      clearScrollLock()
-    }, failsafeMs)
+    const failsafeMs = touchLike ? 4000 : 5500
+    const failsafe = setTimeout(() => handleLoaderCompleteRef.current(), failsafeMs)
     return () => clearTimeout(failsafe)
   }, [touchLike])
 
