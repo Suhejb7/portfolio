@@ -15,11 +15,15 @@ const deadlineMs = typeof window !== 'undefined' ? holdMs() : MOBILE_LOADER_MS
 
 let timerId = null
 let hasRevealed = false
-const subscribers = new Set()
+let revealHandler = null
 
 export const isLoaderRevealed = () => hasRevealed
 
 const msRemaining = () => Math.max(0, deadlineMs - (Date.now() - startedAt))
+
+const invokeReveal = () => {
+  revealHandler?.()
+}
 
 const runReveal = () => {
   if (hasRevealed) return
@@ -28,9 +32,7 @@ const runReveal = () => {
     clearTimeout(timerId)
     timerId = null
   }
-  console.log('Loading finished')
-  subscribers.forEach((fn) => fn())
-  subscribers.clear()
+  invokeReveal()
 }
 
 const armDeadline = () => {
@@ -43,18 +45,20 @@ if (typeof window !== 'undefined') {
 }
 
 export const subscribeLoaderReveal = (onReveal) => {
+  revealHandler = onReveal
+
   if (hasRevealed) {
     onReveal()
-    return () => {}
+    return () => {
+      if (revealHandler === onReveal) revealHandler = null
+    }
   }
-
-  subscribers.add(onReveal)
 
   if (msRemaining() === 0) {
     runReveal()
   }
 
   return () => {
-    subscribers.delete(onReveal)
+    if (revealHandler === onReveal) revealHandler = null
   }
 }

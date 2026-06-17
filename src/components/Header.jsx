@@ -64,10 +64,6 @@ const Header = ({
     return () => unlockScroll()
   }, [isMobileMenuOpen])
 
-  useEffect(() => {
-    console.log('Header mounted')
-  }, [])
-
   return (
     <>
       <motion.header

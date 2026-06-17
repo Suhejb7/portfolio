@@ -1,5 +1,4 @@
 import { motion, AnimatePresence } from 'framer-motion'
-import { useEffect } from 'react'
 import { usePreferReducedEffects, useIsMobile } from '../hooks/useMediaQuery'
 
 const LUX_EASE = [0.22, 1, 0.36, 1]
@@ -181,12 +180,6 @@ const Loading = ({ isLoading, content, currentLanguage }) => {
   const lite = usePreferReducedEffects()
   const isMobile = useIsMobile()
   const lang = currentLanguage || 'en'
-
-  useEffect(() => {
-    if (isLoading) {
-      console.log('Loading mounted')
-    }
-  }, [isLoading])
 
   if (!isLoading) return null
 

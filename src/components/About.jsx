@@ -94,10 +94,6 @@ const About = ({ content, currentLanguage, projectCount, skillCount }) => {
   const t = content[currentLanguage].about
   const heroDesc = content[currentLanguage].hero.description
 
-  useEffect(() => {
-    console.log('About mounted')
-  }, [])
-
   const stats = [
     { value: projectCount, suffix: '+', label: t.metrics.projects },
     { value: skillCount, suffix: '', label: t.metrics.technologies },
