@@ -1,10 +1,12 @@
-import { useState, useEffect, useLayoutEffect } from 'react'
-import Loading from './components/Loading'
-import SiteContent from './SiteContent'
+import { useState, useEffect, useLayoutEffect, lazy, Suspense } from 'react'
+import SiteContentTouch from './SiteContentTouch'
 import { content } from './data/content'
 import { subscribeLoaderReveal } from './utils/loaderSchedule'
 import { clearScrollLock } from './utils/scrollLock'
 import { isTouchLike } from './utils/touchLike'
+
+const SiteContent = lazy(() => import('./SiteContent'))
+const Loading = lazy(() => import('./components/Loading'))
 
 function App() {
   const [mobile] = useState(() => isTouchLike())
@@ -36,8 +38,7 @@ function App() {
 
   if (mobile) {
     return (
-      <SiteContent
-        revealed
+      <SiteContentTouch
         currentLanguage={currentLanguage}
         setCurrentLanguage={setCurrentLanguage}
       />
@@ -46,18 +47,22 @@ function App() {
 
   return (
     <>
-      <Loading
-        isLoading={isLoading}
-        content={content}
-        currentLanguage={currentLanguage}
-      />
+      <Suspense fallback={null}>
+        <Loading
+          isLoading={isLoading}
+          content={content}
+          currentLanguage={currentLanguage}
+        />
+      </Suspense>
 
       {!isLoading && (
-        <SiteContent
-          revealed={revealed}
-          currentLanguage={currentLanguage}
-          setCurrentLanguage={setCurrentLanguage}
-        />
+        <Suspense fallback={null}>
+          <SiteContent
+            revealed={revealed}
+            currentLanguage={currentLanguage}
+            setCurrentLanguage={setCurrentLanguage}
+          />
+        </Suspense>
       )}
     </>
   )

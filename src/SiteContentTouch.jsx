@@ -1,26 +1,40 @@
 import { useState, useEffect } from 'react'
-import SmoothScroll from './components/SmoothScroll'
-import Header from './components/Header'
-import Hero from './components/Hero'
-import About from './components/About'
-import Skills from './components/Skills'
-import Projects from './components/Projects'
-import Contact from './components/Contact'
-import Footer from './components/Footer'
-import AnimatedBackground from './components/ui/AnimatedBackground'
-import ScrollProgress from './components/ui/ScrollProgress'
+import HeaderTouch from './components/HeaderTouch'
+import HeroTouch from './components/HeroTouch'
+import AnimatedBackgroundTouch from './components/ui/AnimatedBackgroundTouch'
 import { content } from './data/content'
 import { skills } from './data/skills'
 import { projects } from './data/projects'
 import { NAV_SECTIONS } from './data/nav'
-import { useIsMobile } from './hooks/useMediaQuery'
 import { getScrollLockY, forceUnlockAndScrollTo } from './utils/scrollLock'
 
-const SiteContent = ({ revealed, currentLanguage, setCurrentLanguage }) => {
+const belowFoldLoad = import('./BelowFoldSections')
+const footerLoad = import('./components/Footer')
+
+const SiteContentTouch = ({ currentLanguage, setCurrentLanguage }) => {
   const [activeSection, setActiveSection] = useState('home')
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
-  const isMobile = useIsMobile()
+  const [BelowFold, setBelowFold] = useState(null)
+  const [Footer, setFooter] = useState(null)
+
+  const t = content[currentLanguage].hero
+  const nameParts = t.title.split(' ')
+  const firstName = nameParts[0]
+  const lastName = nameParts.slice(1).join(' ')
+
+  useEffect(() => {
+    let cancelled = false
+    belowFoldLoad.then((mod) => {
+      if (!cancelled) setBelowFold(() => mod.default)
+    })
+    footerLoad.then((mod) => {
+      if (!cancelled) setFooter(() => mod.default)
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   useEffect(() => {
     const handleScroll = () => {
@@ -54,19 +68,16 @@ const SiteContent = ({ revealed, currentLanguage, setCurrentLanguage }) => {
     const element = document.getElementById(sectionId)
     if (!element) return
 
-    const offset = isMobile ? 72 : 80
     const scrollY = getScrollLockY()
-    const targetY = Math.max(0, element.getBoundingClientRect().top + scrollY - offset)
+    const targetY = Math.max(0, element.getBoundingClientRect().top + scrollY - 72)
 
     setIsMobileMenuOpen(false)
     forceUnlockAndScrollTo(targetY)
   }
 
   return (
-    <SmoothScroll>
-      <ScrollProgress />
-
-      <Header
+    <>
+      <HeaderTouch
         activeSection={activeSection}
         content={content}
         currentLanguage={currentLanguage}
@@ -75,37 +86,35 @@ const SiteContent = ({ revealed, currentLanguage, setCurrentLanguage }) => {
         isScrolled={isScrolled}
         isMobileMenuOpen={isMobileMenuOpen}
         setIsMobileMenuOpen={setIsMobileMenuOpen}
-        revealed={revealed}
       />
 
       <div className="relative w-full z-[1]">
-        <AnimatedBackground />
+        <AnimatedBackgroundTouch />
 
         <main>
-          <Hero
+          <HeroTouch
             content={content}
             currentLanguage={currentLanguage}
             scrollToSection={scrollToSection}
+            t={t}
+            firstName={firstName}
+            lastName={lastName}
           />
 
-          <About
-            content={content}
-            currentLanguage={currentLanguage}
-            projectCount={projects.length}
-            skillCount={Object.values(skills).flat().length}
-          />
-
-          <Skills content={content} currentLanguage={currentLanguage} />
-
-          <Projects projects={projects} content={content} currentLanguage={currentLanguage} />
-
-          <Contact content={content} currentLanguage={currentLanguage} />
+          {BelowFold && (
+            <BelowFold
+              content={content}
+              currentLanguage={currentLanguage}
+              projects={projects}
+              skills={skills}
+            />
+          )}
         </main>
 
-        <Footer content={content} currentLanguage={currentLanguage} />
+        {Footer && <Footer content={content} currentLanguage={currentLanguage} />}
       </div>
-    </SmoothScroll>
+    </>
   )
 }
 
-export default SiteContent
+export default SiteContentTouch
