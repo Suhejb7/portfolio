@@ -1,4 +1,3 @@
-import { motion } from 'framer-motion'
 import { useState } from 'react'
 import { MapPin, Mail, Phone, Linkedin, Send, Instagram } from 'lucide-react'
 import emailjs from '@emailjs/browser'
@@ -6,8 +5,6 @@ import SectionHeading from './ui/SectionHeading'
 import SpotlightCard from './ui/SpotlightCard'
 import MagneticButton from './ui/MagneticButton'
 import Reveal from './ui/Reveal'
-
-const LUX_EASE = [0.22, 1, 0.36, 1]
 
 const Contact = ({ content, currentLanguage }) => {
   const t = content[currentLanguage].contact
@@ -128,25 +125,15 @@ const Contact = ({ content, currentLanguage }) => {
                 </div>
 
                 {submitStatus === 'success' && (
-                  <motion.div
-                    className="contact-status contact-status--success"
-                    initial={{ opacity: 0, y: 6 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, ease: LUX_EASE }}
-                  >
+                  <div className="contact-status contact-status--success">
                     Message sent successfully!
-                  </motion.div>
+                  </div>
                 )}
 
                 {submitStatus === 'error' && (
-                  <motion.div
-                    className="contact-status contact-status--error"
-                    initial={{ opacity: 0, y: 6 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, ease: LUX_EASE }}
-                  >
+                  <div className="contact-status contact-status--error">
                     Failed to send message. Please try again.
-                  </motion.div>
+                  </div>
                 )}
 
                 <MagneticButton
@@ -193,18 +180,16 @@ const Contact = ({ content, currentLanguage }) => {
                 <h3 className="contact-panel-title mb-4 sm:mb-5">{t.followMe}</h3>
                 <div className="contact-social">
                   {socialLinks.map(({ href, icon: Icon, label }) => (
-                    <motion.a
+                    <a
                       key={label}
                       href={href}
                       target={href.startsWith('http') ? '_blank' : undefined}
                       rel={href.startsWith('http') ? 'noopener noreferrer' : undefined}
                       className="contact-social__link"
-                      whileHover={{ y: -2 }}
-                      transition={{ duration: 0.4, ease: LUX_EASE }}
                       aria-label={label}
                     >
                       <Icon size={17} strokeWidth={1.5} />
-                    </motion.a>
+                    </a>
                   ))}
                 </div>
               </div>

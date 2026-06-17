@@ -1,6 +1,7 @@
 import { useRef } from 'react'
 import { motion } from 'framer-motion'
 import { useIsTouchDevice } from '../../hooks/useMediaQuery'
+import { isTouchLike } from '../../utils/touchLike'
 
 const MagneticButton = ({
   children,
@@ -13,7 +14,7 @@ const MagneticButton = ({
   ...props
 }) => {
   const ref = useRef(null)
-  const isTouch = useIsTouchDevice()
+  const isTouch = useIsTouchDevice() || isTouchLike()
 
   const handleMove = (e) => {
     if (isTouch) return
@@ -31,14 +32,29 @@ const MagneticButton = ({
     el.style.transform = 'translate(0, 0)'
   }
 
+  if (isTouch) {
+    return (
+      <button
+        ref={ref}
+        type={type}
+        disabled={disabled}
+        onClick={onClick}
+        className={`magnetic-btn ${className}`}
+        {...props}
+      >
+        {children}
+      </button>
+    )
+  }
+
   return (
     <Component
       ref={ref}
       type={type}
       disabled={disabled}
       onClick={onClick}
-      onMouseMove={isTouch ? undefined : handleMove}
-      onMouseLeave={isTouch ? undefined : handleLeave}
+      onMouseMove={handleMove}
+      onMouseLeave={handleLeave}
       className={`magnetic-btn transition-transform duration-300 ease-out ${className}`}
       whileTap={{ scale: 0.97 }}
       {...props}

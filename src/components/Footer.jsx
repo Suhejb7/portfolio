@@ -1,9 +1,6 @@
-import { motion } from 'framer-motion'
 import { Linkedin, Mail, Instagram, ArrowUpRight } from 'lucide-react'
 import { NAV_SECTIONS } from '../data/nav'
 import Reveal from './ui/Reveal'
-
-const LUX_EASE = [0.22, 1, 0.36, 1]
 
 const Footer = ({ content, currentLanguage }) => {
   const t = content[currentLanguage].footer
@@ -36,40 +33,40 @@ const Footer = ({ content, currentLanguage }) => {
               <p className="footer-brand__desc">{t.description}</p>
             </Reveal>
 
-            <Reveal as={motion.nav} className="footer-nav" aria-label={t.quickLinks} delay={0.1}>
-              <h4 className="footer-label">{t.quickLinks}</h4>
-              <ul className="footer-nav__list">
-                {NAV_SECTIONS.filter((id) => id !== 'home').map((id) => (
-                  <li key={id}>
-                    <a href={`#${id}`} className="footer-nav__link group/link">
-                      {nav[id]}
-                      <ArrowUpRight
-                        size={11}
-                        strokeWidth={1.5}
-                        className="footer-nav__link-icon group-hover/link:opacity-60"
-                      />
-                    </a>
-                  </li>
-                ))}
-              </ul>
+            <Reveal className="footer-nav" delay={0.1}>
+              <nav aria-label={t.quickLinks}>
+                <h4 className="footer-label">{t.quickLinks}</h4>
+                <ul className="footer-nav__list">
+                  {NAV_SECTIONS.filter((id) => id !== 'home').map((id) => (
+                    <li key={id}>
+                      <a href={`#${id}`} className="footer-nav__link group/link">
+                        {nav[id]}
+                        <ArrowUpRight
+                          size={11}
+                          strokeWidth={1.5}
+                          className="footer-nav__link-icon group-hover/link:opacity-60"
+                        />
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </nav>
             </Reveal>
 
             <Reveal className="footer-connect" delay={0.14}>
               <h4 className="footer-label">{t.connect}</h4>
               <div className="footer-social">
                 {socialLinks.map(({ href, icon: Icon, label }) => (
-                  <motion.a
+                  <a
                     key={label}
                     href={href}
                     target={href.startsWith('http') ? '_blank' : undefined}
                     rel={href.startsWith('http') ? 'noopener noreferrer' : undefined}
                     className="footer-social__link"
-                    whileHover={{ y: -2 }}
-                    transition={{ duration: 0.45, ease: LUX_EASE }}
                     aria-label={label}
                   >
                     <Icon size={17} strokeWidth={1.5} />
-                  </motion.a>
+                  </a>
                 ))}
               </div>
             </Reveal>

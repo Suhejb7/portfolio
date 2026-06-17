@@ -1,11 +1,10 @@
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import { usePreferReducedEffects, useIsMobile } from '../hooks/useMediaQuery'
 import { isTouchLike } from '../utils/touchLike'
 
 export { isTouchLike }
 
 const LUX_EASE = [0.22, 1, 0.36, 1]
-const EXIT_EASE = [0.76, 0, 0.24, 1]
 
 const useTouchLike = () => isTouchLike()
 
@@ -100,10 +99,8 @@ const DesktopLoader = ({ lite, isMobile, content, lang }) => {
 
   return (
     <motion.div
-      key="luxury-intro"
       className="fixed inset-0 z-[200] flex items-center justify-center overflow-hidden"
       initial={{ opacity: 1 }}
-      exit={{ opacity: 0, transition: { duration: 0.85, ease: EXIT_EASE } }}
     >
       <LoaderAtmosphere lite={lite} />
       <motion.div
@@ -169,23 +166,22 @@ const DesktopLoader = ({ lite, isMobile, content, lang }) => {
   )
 }
 
-/** Presentational only — loaderSchedule.js owns the 2200ms dismiss timer. */
+/** Presentational only — loaderSchedule.js owns the dismiss timer. */
 const Loading = ({ isLoading, content, currentLanguage }) => {
   const touchLike = useTouchLike()
   const lite = usePreferReducedEffects()
   const isMobile = useIsMobile()
   const lang = currentLanguage || 'en'
 
-  if (!isLoading) return null
-
   if (touchLike) {
+    if (!isLoading) return null
     return <TouchLoader content={content} lang={lang} />
   }
 
+  if (!isLoading) return null
+
   return (
-    <AnimatePresence mode="wait">
-      <DesktopLoader lite={lite} isMobile={isMobile} content={content} lang={lang} />
-    </AnimatePresence>
+    <DesktopLoader lite={lite} isMobile={isMobile} content={content} lang={lang} />
   )
 }
 

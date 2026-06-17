@@ -14,6 +14,11 @@ const resetBodyScrollStyles = () => {
 
 const isScrollLocked = () => document.body.style.position === 'fixed'
 
+const isTouchLike = () => {
+  if (typeof window === 'undefined') return false
+  return window.matchMedia('(max-width: 1023px), (pointer: coarse)').matches
+}
+
 /** Current document scroll position — correct even while the menu lock is active. */
 export const getScrollLockY = () => (isScrollLocked() ? savedScrollY : window.scrollY)
 
@@ -21,11 +26,18 @@ export const getScrollLockY = () => (isScrollLocked() ? savedScrollY : window.sc
 export const clearScrollLock = () => {
   lockCount = 0
   resetBodyScrollStyles()
-  window.scrollTo(0, savedScrollY)
+  if (!isTouchLike()) {
+    window.scrollTo(0, savedScrollY)
+  }
   window.lenis?.start?.()
 }
 
 export const lockScroll = () => {
+  if (isTouchLike()) {
+    document.documentElement.style.overflow = 'hidden'
+    return
+  }
+
   if (lockCount === 0) {
     savedScrollY = window.scrollY
     document.body.style.overflow = 'hidden'
@@ -41,6 +53,11 @@ export const lockScroll = () => {
 }
 
 export const unlockScroll = () => {
+  if (isTouchLike()) {
+    document.documentElement.style.overflow = ''
+    return
+  }
+
   if (lockCount === 0) return
 
   lockCount -= 1
@@ -54,6 +71,12 @@ export const unlockScroll = () => {
 
 /** Unlock scroll and navigate — used when mobile menu links are tapped. */
 export const forceUnlockAndScrollTo = (targetY, { smooth = true } = {}) => {
+  if (isTouchLike()) {
+    document.documentElement.style.overflow = ''
+    window.scrollTo({ top: targetY, behavior: 'auto' })
+    return
+  }
+
   lockCount = 0
   resetBodyScrollStyles()
   savedScrollY = targetY

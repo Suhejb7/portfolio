@@ -57,9 +57,17 @@ const SiteContent = ({ revealed, currentLanguage, setCurrentLanguage }) => {
     const offset = isMobile ? 72 : 80
     const scrollY = getScrollLockY()
     const targetY = Math.max(0, element.getBoundingClientRect().top + scrollY - offset)
+    const wasMenuOpen = isMobileMenuOpen
 
     setIsMobileMenuOpen(false)
-    forceUnlockAndScrollTo(targetY)
+
+    const runScroll = () => forceUnlockAndScrollTo(targetY, { smooth: !isMobile })
+
+    if (wasMenuOpen && isMobile) {
+      requestAnimationFrame(runScroll)
+    } else {
+      runScroll()
+    }
   }
 
   return (
