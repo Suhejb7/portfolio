@@ -1,19 +1,21 @@
-import { useState, useEffect, useLayoutEffect, lazy, Suspense } from 'react'
+import { useState, useEffect, useLayoutEffect } from 'react'
 import Loading from './components/Loading'
+import SiteContent from './SiteContent'
 import { content } from './data/content'
 import { subscribeLoaderReveal } from './utils/loaderSchedule'
 import { clearScrollLock } from './utils/scrollLock'
-
-const SiteContent = lazy(() => import('./SiteContent'))
 
 function App() {
   const [isLoading, setIsLoading] = useState(true)
   const [revealed, setRevealed] = useState(false)
   const [currentLanguage, setCurrentLanguage] = useState('en')
 
+  useEffect(() => {
+    console.log('App mounted')
+  }, [])
+
   useLayoutEffect(() => {
     clearScrollLock()
-    import('./SiteContent')
 
     return subscribeLoaderReveal(() => {
       setIsLoading(false)
@@ -42,13 +44,11 @@ function App() {
       />
 
       {!isLoading && (
-        <Suspense fallback={null}>
-          <SiteContent
-            revealed={revealed}
-            currentLanguage={currentLanguage}
-            setCurrentLanguage={setCurrentLanguage}
-          />
-        </Suspense>
+        <SiteContent
+          revealed={revealed}
+          currentLanguage={currentLanguage}
+          setCurrentLanguage={setCurrentLanguage}
+        />
       )}
     </>
   )

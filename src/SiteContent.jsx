@@ -23,6 +23,10 @@ const SiteContent = ({ revealed, currentLanguage, setCurrentLanguage }) => {
   const isMobile = useIsMobile()
 
   useEffect(() => {
+    console.log('SiteContent mounted')
+  }, [])
+
+  useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 50)
 

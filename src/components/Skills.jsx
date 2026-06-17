@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useEffect } from 'react'
 import SpotlightCard from './ui/SpotlightCard'
 import Reveal from './ui/Reveal'
 import { skills } from '../data/skills'
@@ -72,6 +72,10 @@ const InfiniteMarquee = ({ items }) => {
 
 const Skills = ({ content, currentLanguage }) => {
   const t = content[currentLanguage].skills
+
+  useEffect(() => {
+    console.log('Skills mounted')
+  }, [])
 
   const categoryLabels = useMemo(
     () => ({

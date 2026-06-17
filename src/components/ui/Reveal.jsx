@@ -1,19 +1,12 @@
 import { forwardRef, useRef } from 'react'
 import { motion, useInView } from 'framer-motion'
+import { useIsMobile, useIsTouchDevice } from '../../hooks/useMediaQuery'
 import { LUX_EASE, REVEAL_VIEWPORT } from '../../utils/animations'
 
-const isTouchLikeViewport = () => {
-  if (typeof window === 'undefined') return true
-  return window.matchMedia('(max-width: 1023px), (pointer: coarse)').matches
-}
-
-/** Frozen on first render — avoids Safari flip-flop when hooks resolve late. */
 const useTouchLike = () => {
-  const ref = useRef(null)
-  if (ref.current === null) {
-    ref.current = isTouchLikeViewport()
-  }
-  return ref.current
+  const isMobile = useIsMobile()
+  const isTouch = useIsTouchDevice()
+  return isMobile || isTouch
 }
 
 /**

@@ -64,13 +64,17 @@ const Header = ({
     return () => unlockScroll()
   }, [isMobileMenuOpen])
 
+  useEffect(() => {
+    console.log('Header mounted')
+  }, [])
+
   return (
     <>
       <motion.header
         className={`fixed top-0 left-0 right-0 z-[60] transition-all duration-500 ${
           showGlass ? 'py-2 sm:py-3' : 'py-3 sm:py-4'
         }`}
-        initial={{ y: -100, opacity: 0 }}
+        initial={touchLike ? false : { y: -100, opacity: 0 }}
         animate={{
           y: headerVisible ? 0 : -100,
           opacity: headerVisible ? 1 : 0,
