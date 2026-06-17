@@ -6,24 +6,38 @@ const holdMs = () =>
     ? MOBILE_LOADER_MS
     : DESKTOP_LOADER_MS
 
+/** Captured once when this module first loads — before React mounts. */
+const deadlineMs = holdMs()
+const startedAt = Date.now()
+
 let timerId = null
 let hasRevealed = false
 const subscribers = new Set()
 
+const msRemaining = () => Math.max(0, deadlineMs - (Date.now() - startedAt))
+
 const runReveal = () => {
   if (hasRevealed) return
   hasRevealed = true
-  timerId = null
+  if (timerId !== null) {
+    clearTimeout(timerId)
+    timerId = null
+  }
   subscribers.forEach((fn) => fn())
   subscribers.clear()
 }
 
-const ensureTimer = () => {
+const armDeadline = () => {
   if (hasRevealed || timerId !== null) return
-  timerId = window.setTimeout(runReveal, holdMs())
+  timerId = window.setTimeout(runReveal, msRemaining())
 }
 
-/** One hard deadline per page load. Timer is never reset by React remounts. */
+// Hard timeout starts at JS parse time, not when React subscribes.
+if (typeof window !== 'undefined') {
+  armDeadline()
+}
+
+/** Subscribe to the fixed 2200ms (mobile) deadline. Timer is never reset. */
 export const subscribeLoaderReveal = (onReveal) => {
   if (hasRevealed) {
     onReveal()
@@ -31,7 +45,10 @@ export const subscribeLoaderReveal = (onReveal) => {
   }
 
   subscribers.add(onReveal)
-  ensureTimer()
+
+  if (msRemaining() === 0) {
+    runReveal()
+  }
 
   return () => {
     subscribers.delete(onReveal)

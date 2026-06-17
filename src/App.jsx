@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useLayoutEffect } from 'react'
 import SmoothScroll from './components/SmoothScroll'
 import Header from './components/Header'
 import Hero from './components/Hero'
@@ -27,7 +27,7 @@ function App() {
   const [currentLanguage, setCurrentLanguage] = useState('en')
   const isMobile = useIsMobile()
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     clearScrollLock()
 
     const revealSite = () => {
