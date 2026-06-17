@@ -7,7 +7,6 @@ const holdMs = () =>
     ? MOBILE_LOADER_MS
     : DESKTOP_LOADER_MS
 
-/** Earliest possible t0 — set in index.html before the JS bundle loads. */
 const startedAt =
   typeof window !== 'undefined'
     ? (window.__loaderStartedAt ?? Date.now())
@@ -18,6 +17,7 @@ const deadlineMs = typeof window !== 'undefined' ? holdMs() : MOBILE_LOADER_MS
 let timerId = null
 let hasRevealed = false
 const subscribers = new Set()
+let latestRevealCallback = null
 
 export const isLoaderRevealed = () => hasRevealed
 
@@ -36,7 +36,10 @@ const runReveal = () => {
   }
   hideLoadingScreenDom()
   console.log('Loading timeout finished')
-  subscribers.forEach((fn) => fn())
+
+  const callbacks = new Set(subscribers)
+  if (latestRevealCallback) callbacks.add(latestRevealCallback)
+  callbacks.forEach((fn) => fn())
   subscribers.clear()
 }
 
@@ -52,9 +55,13 @@ if (typeof window !== 'undefined') {
 }
 
 export const subscribeLoaderReveal = (onReveal) => {
+  latestRevealCallback = onReveal
+
   if (hasRevealed) {
     onReveal()
-    return () => {}
+    return () => {
+      if (latestRevealCallback === onReveal) latestRevealCallback = null
+    }
   }
 
   subscribers.add(onReveal)
@@ -65,5 +72,6 @@ export const subscribeLoaderReveal = (onReveal) => {
 
   return () => {
     subscribers.delete(onReveal)
+    if (latestRevealCallback === onReveal) latestRevealCallback = null
   }
 }

@@ -64,6 +64,10 @@ const Header = ({
     return () => unlockScroll()
   }, [isMobileMenuOpen])
 
+  useEffect(() => {
+    console.log('Navbar mounted')
+  }, [])
+
   return (
     <>
       <motion.header

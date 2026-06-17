@@ -204,6 +204,10 @@ const Hero = ({ content, currentLanguage, scrollToSection }) => {
   const fullSubtitle = t.subtitle
 
   useEffect(() => {
+    console.log('Hero mounted')
+  }, [])
+
+  useEffect(() => {
     if (reduceEffects || isMobile) {
       setDisplayText(fullSubtitle)
       return
