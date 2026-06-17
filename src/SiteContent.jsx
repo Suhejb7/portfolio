@@ -1,11 +1,7 @@
-import { useState, useEffect } from 'react'
+import { lazy, Suspense, useState, useEffect } from 'react'
+import SmoothScroll from './components/SmoothScroll'
 import Header from './components/Header'
 import Hero from './components/Hero'
-import About from './components/About'
-import Skills from './components/Skills'
-import Projects from './components/Projects'
-import Contact from './components/Contact'
-import Footer from './components/Footer'
 import AnimatedBackground from './components/ui/AnimatedBackground'
 import ScrollProgress from './components/ui/ScrollProgress'
 import { content } from './data/content'
@@ -14,11 +10,28 @@ import { projects } from './data/projects'
 import { NAV_SECTIONS } from './data/nav'
 import { useIsMobile } from './hooks/useMediaQuery'
 import { getScrollLockY, forceUnlockAndScrollTo } from './utils/scrollLock'
+import { isTouchLike } from './utils/touchLike'
+
+const About = lazy(() => import('./components/About'))
+const Skills = lazy(() => import('./components/Skills'))
+const Projects = lazy(() => import('./components/Projects'))
+const Contact = lazy(() => import('./components/Contact'))
+const Footer = lazy(() => import('./components/Footer'))
+
 const SiteContent = ({ revealed, currentLanguage, setCurrentLanguage }) => {
   const [activeSection, setActiveSection] = useState('home')
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
+  const [belowFoldReady, setBelowFoldReady] = useState(() => !isTouchLike())
   const isMobile = useIsMobile()
+
+  useEffect(() => {
+    if (!isTouchLike()) return undefined
+
+    // Defer below-fold mount until after first paint — Safari blocks if everything mounts at once.
+    const id = window.setTimeout(() => setBelowFoldReady(true), 0)
+    return () => clearTimeout(id)
+  }, [])
 
   useEffect(() => {
     const handleScroll = () => {
@@ -61,7 +74,7 @@ const SiteContent = ({ revealed, currentLanguage, setCurrentLanguage }) => {
   }
 
   return (
-    <>
+    <SmoothScroll>
       <ScrollProgress />
 
       <Header
@@ -86,27 +99,35 @@ const SiteContent = ({ revealed, currentLanguage, setCurrentLanguage }) => {
             scrollToSection={scrollToSection}
           />
 
-          <About
-            content={content}
-            currentLanguage={currentLanguage}
-            projectCount={projects.length}
-            skillCount={Object.values(skills).flat().length}
-          />
+          {belowFoldReady && (
+            <Suspense fallback={null}>
+              <About
+                content={content}
+                currentLanguage={currentLanguage}
+                projectCount={projects.length}
+                skillCount={Object.values(skills).flat().length}
+              />
 
-          <Skills content={content} currentLanguage={currentLanguage} />
+              <Skills content={content} currentLanguage={currentLanguage} />
 
-          <Projects
-            projects={projects}
-            content={content}
-            currentLanguage={currentLanguage}
-          />
+              <Projects
+                projects={projects}
+                content={content}
+                currentLanguage={currentLanguage}
+              />
 
-          <Contact content={content} currentLanguage={currentLanguage} />
+              <Contact content={content} currentLanguage={currentLanguage} />
+            </Suspense>
+          )}
         </main>
 
-        <Footer content={content} currentLanguage={currentLanguage} />
+        {belowFoldReady && (
+          <Suspense fallback={null}>
+            <Footer content={content} currentLanguage={currentLanguage} />
+          </Suspense>
+        )}
       </div>
-    </>
+    </SmoothScroll>
   )
 }
 

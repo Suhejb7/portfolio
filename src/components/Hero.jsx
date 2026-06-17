@@ -39,7 +39,7 @@ const HeroPhotoDesktop = ({ t }) => (
 )
 
 const HeroMobile = ({ t, content, currentLanguage, scrollToSection, firstName, lastName, reduceEffects }) => (
-  <div className="lg:hidden relative min-h-[calc(100dvh-5rem-env(safe-area-inset-top))] flex flex-col px-6 pt-1 pb-12">
+  <div className="lg:hidden relative min-h-[calc(100dvh_-_5rem_-_env(safe-area-inset-top,0px))] flex flex-col px-6 pt-1 pb-12">
     <div className="relative z-10 flex-1 grid grid-cols-[minmax(0,1fr)_clamp(112px,34vw,142px)] gap-x-4 sm:gap-x-5 items-center pt-8 pb-6">
       <div className="col-start-1 min-w-0 flex flex-col justify-center">
         <motion.p
