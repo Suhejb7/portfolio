@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react'
-import SmoothScroll from './components/SmoothScroll'
 import Header from './components/Header'
 import Hero from './components/Hero'
 import About from './components/About'
@@ -15,20 +14,11 @@ import { projects } from './data/projects'
 import { NAV_SECTIONS } from './data/nav'
 import { useIsMobile } from './hooks/useMediaQuery'
 import { getScrollLockY, forceUnlockAndScrollTo } from './utils/scrollLock'
-import { isTouchLike } from './utils/touchLike'
-
 const SiteContent = ({ revealed, currentLanguage, setCurrentLanguage }) => {
   const [activeSection, setActiveSection] = useState('home')
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
-  const [belowFoldReady, setBelowFoldReady] = useState(() => !isTouchLike())
   const isMobile = useIsMobile()
-
-  useEffect(() => {
-    if (!isTouchLike()) return undefined
-    const id = requestAnimationFrame(() => setBelowFoldReady(true))
-    return () => cancelAnimationFrame(id)
-  }, [])
 
   useEffect(() => {
     const handleScroll = () => {
@@ -71,7 +61,7 @@ const SiteContent = ({ revealed, currentLanguage, setCurrentLanguage }) => {
   }
 
   return (
-    <SmoothScroll>
+    <>
       <ScrollProgress />
 
       <Header
@@ -96,33 +86,27 @@ const SiteContent = ({ revealed, currentLanguage, setCurrentLanguage }) => {
             scrollToSection={scrollToSection}
           />
 
-          {belowFoldReady && (
-            <>
-              <About
-                content={content}
-                currentLanguage={currentLanguage}
-                projectCount={projects.length}
-                skillCount={Object.values(skills).flat().length}
-              />
+          <About
+            content={content}
+            currentLanguage={currentLanguage}
+            projectCount={projects.length}
+            skillCount={Object.values(skills).flat().length}
+          />
 
-              <Skills content={content} currentLanguage={currentLanguage} />
+          <Skills content={content} currentLanguage={currentLanguage} />
 
-              <Projects
-                projects={projects}
-                content={content}
-                currentLanguage={currentLanguage}
-              />
+          <Projects
+            projects={projects}
+            content={content}
+            currentLanguage={currentLanguage}
+          />
 
-              <Contact content={content} currentLanguage={currentLanguage} />
-            </>
-          )}
+          <Contact content={content} currentLanguage={currentLanguage} />
         </main>
 
-        {belowFoldReady && (
-          <Footer content={content} currentLanguage={currentLanguage} />
-        )}
+        <Footer content={content} currentLanguage={currentLanguage} />
       </div>
-    </SmoothScroll>
+    </>
   )
 }
 
