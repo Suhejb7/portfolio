@@ -28,14 +28,13 @@ function App() {
   const isMobile = useIsMobile()
 
   useEffect(() => {
-    console.log('App content mounted')
+    console.log('App mounted')
   }, [])
 
   useLayoutEffect(() => {
     clearScrollLock()
 
     const revealSite = () => {
-      console.log('Loading complete')
       console.log('revealed = true')
       setIsLoading(false)
       setRevealed(true)

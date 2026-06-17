@@ -1,6 +1,5 @@
 export const MOBILE_LOADER_MS = 2200
 export const DESKTOP_LOADER_MS = 4000
-export const LOADER_ROOT_ID = 'portfolio-loading-screen'
 
 const holdMs = () =>
   window.matchMedia('(max-width: 1023px), (pointer: coarse)').matches
@@ -17,15 +16,10 @@ const deadlineMs = typeof window !== 'undefined' ? holdMs() : MOBILE_LOADER_MS
 let timerId = null
 let hasRevealed = false
 const subscribers = new Set()
-let latestRevealCallback = null
 
 export const isLoaderRevealed = () => hasRevealed
 
 const msRemaining = () => Math.max(0, deadlineMs - (Date.now() - startedAt))
-
-export const hideLoadingScreenDom = () => {
-  document.getElementById(LOADER_ROOT_ID)?.remove()
-}
 
 const runReveal = () => {
   if (hasRevealed) return
@@ -34,20 +28,14 @@ const runReveal = () => {
     clearTimeout(timerId)
     timerId = null
   }
-  hideLoadingScreenDom()
-  console.log('Loading timeout finished')
-
-  const callbacks = new Set(subscribers)
-  if (latestRevealCallback) callbacks.add(latestRevealCallback)
-  callbacks.forEach((fn) => fn())
+  console.log('Loading finished')
+  subscribers.forEach((fn) => fn())
   subscribers.clear()
 }
 
 const armDeadline = () => {
   if (hasRevealed || timerId !== null) return
-  const remaining = msRemaining()
-  console.log('Loading timeout started', { remainingMs: remaining, deadlineMs })
-  timerId = window.setTimeout(runReveal, remaining)
+  timerId = window.setTimeout(runReveal, msRemaining())
 }
 
 if (typeof window !== 'undefined') {
@@ -55,13 +43,9 @@ if (typeof window !== 'undefined') {
 }
 
 export const subscribeLoaderReveal = (onReveal) => {
-  latestRevealCallback = onReveal
-
   if (hasRevealed) {
     onReveal()
-    return () => {
-      if (latestRevealCallback === onReveal) latestRevealCallback = null
-    }
+    return () => {}
   }
 
   subscribers.add(onReveal)
@@ -72,6 +56,5 @@ export const subscribeLoaderReveal = (onReveal) => {
 
   return () => {
     subscribers.delete(onReveal)
-    if (latestRevealCallback === onReveal) latestRevealCallback = null
   }
 }

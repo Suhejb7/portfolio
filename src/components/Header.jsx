@@ -65,7 +65,7 @@ const Header = ({
   }, [isMobileMenuOpen])
 
   useEffect(() => {
-    console.log('Navbar mounted')
+    console.log('Header mounted')
   }, [])
 
   return (
