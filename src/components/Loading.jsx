@@ -1,18 +1,13 @@
 import { motion, AnimatePresence } from 'framer-motion'
 import { usePreferReducedEffects, useIsMobile } from '../hooks/useMediaQuery'
+import { isTouchLike } from '../utils/touchLike'
+
+export { isTouchLike }
 
 const LUX_EASE = [0.22, 1, 0.36, 1]
 const EXIT_EASE = [0.76, 0, 0.24, 1]
 
-export const isTouchLike = () => {
-  if (typeof window === 'undefined') return true
-  return window.matchMedia('(max-width: 1023px), (pointer: coarse)').matches
-}
-
-const useTouchLike = () => {
-  if (typeof window === 'undefined') return true
-  return window.matchMedia('(max-width: 1023px), (pointer: coarse)').matches
-}
+const useTouchLike = () => isTouchLike()
 
 const LoaderAtmosphere = ({ lite }) => (
   <div className="absolute inset-0 pointer-events-none overflow-hidden">

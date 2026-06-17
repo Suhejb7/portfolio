@@ -15,15 +15,19 @@ import { projects } from './data/projects'
 import { NAV_SECTIONS } from './data/nav'
 import { useIsMobile } from './hooks/useMediaQuery'
 import { getScrollLockY, forceUnlockAndScrollTo } from './utils/scrollLock'
+import { isTouchLike } from './utils/touchLike'
 
 const SiteContent = ({ revealed, currentLanguage, setCurrentLanguage }) => {
   const [activeSection, setActiveSection] = useState('home')
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
+  const [belowFoldReady, setBelowFoldReady] = useState(() => !isTouchLike())
   const isMobile = useIsMobile()
 
   useEffect(() => {
-    console.log('SiteContent mounted')
+    if (!isTouchLike()) return undefined
+    const id = requestAnimationFrame(() => setBelowFoldReady(true))
+    return () => cancelAnimationFrame(id)
   }, [])
 
   useEffect(() => {
@@ -92,25 +96,31 @@ const SiteContent = ({ revealed, currentLanguage, setCurrentLanguage }) => {
             scrollToSection={scrollToSection}
           />
 
-          <About
-            content={content}
-            currentLanguage={currentLanguage}
-            projectCount={projects.length}
-            skillCount={Object.values(skills).flat().length}
-          />
+          {belowFoldReady && (
+            <>
+              <About
+                content={content}
+                currentLanguage={currentLanguage}
+                projectCount={projects.length}
+                skillCount={Object.values(skills).flat().length}
+              />
 
-          <Skills content={content} currentLanguage={currentLanguage} />
+              <Skills content={content} currentLanguage={currentLanguage} />
 
-          <Projects
-            projects={projects}
-            content={content}
-            currentLanguage={currentLanguage}
-          />
+              <Projects
+                projects={projects}
+                content={content}
+                currentLanguage={currentLanguage}
+              />
 
-          <Contact content={content} currentLanguage={currentLanguage} />
+              <Contact content={content} currentLanguage={currentLanguage} />
+            </>
+          )}
         </main>
 
-        <Footer content={content} currentLanguage={currentLanguage} />
+        {belowFoldReady && (
+          <Footer content={content} currentLanguage={currentLanguage} />
+        )}
       </div>
     </SmoothScroll>
   )

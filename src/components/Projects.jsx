@@ -1,4 +1,4 @@
-import { useRef, useEffect } from 'react'
+import { useRef } from 'react'
 import { motion, useScroll, useTransform } from 'framer-motion'
 import { ArrowUpRight, ArrowRight } from 'lucide-react'
 import SectionHeading from './ui/SectionHeading'
@@ -171,10 +171,6 @@ const ProjectCard = ({ project, index, t }) => {
 
 const Projects = ({ projects, content, currentLanguage }) => {
   const t = content[currentLanguage].projects
-
-  useEffect(() => {
-    console.log('Projects mounted')
-  }, [])
 
   return (
     <section id="projects" className="section-padding relative overflow-hidden">

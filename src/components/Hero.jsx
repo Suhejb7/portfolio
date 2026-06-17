@@ -38,16 +38,12 @@ const HeroPhotoDesktop = ({ t }) => (
   </motion.div>
 )
 
-const HeroMobile = ({ t, content, currentLanguage, scrollToSection, firstName, lastName, reduceEffects }) => {
-  const motionInitial = (values) => (reduceEffects ? false : values)
-
-  return (
+const HeroMobile = ({ t, content, currentLanguage, scrollToSection, firstName, lastName, reduceEffects }) => (
   <div className="lg:hidden relative min-h-[calc(100dvh-5rem-env(safe-area-inset-top))] flex flex-col px-6 pt-1 pb-12">
     <div className="relative z-10 flex-1 grid grid-cols-[minmax(0,1fr)_clamp(112px,34vw,142px)] gap-x-4 sm:gap-x-5 items-center pt-8 pb-6">
-      {/* Text column */}
       <div className="col-start-1 min-w-0 flex flex-col justify-center">
         <motion.p
-          initial={motionInitial({ opacity: 0, y: 10 })}
+          initial={false}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.9, ease: LUX_EASE }}
           className="text-[9px] font-semibold uppercase tracking-[0.34em] text-accent/65 mb-7"
@@ -56,7 +52,7 @@ const HeroMobile = ({ t, content, currentLanguage, scrollToSection, firstName, l
         </motion.p>
 
         <motion.h1
-          initial={motionInitial({ opacity: 0, y: 20 })}
+          initial={false}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1, delay: 0.1, ease: LUX_EASE }}
           className="font-display font-bold leading-[0.86] tracking-[-0.048em] mb-9"
@@ -68,7 +64,7 @@ const HeroMobile = ({ t, content, currentLanguage, scrollToSection, firstName, l
         </motion.h1>
 
         <motion.p
-          initial={motionInitial({ opacity: 0, y: 14 })}
+          initial={false}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.95, delay: 0.22, ease: LUX_EASE }}
           className="text-[14px] leading-[1.7] text-white/34 mb-14 tracking-[-0.01em]"
@@ -77,7 +73,7 @@ const HeroMobile = ({ t, content, currentLanguage, scrollToSection, firstName, l
         </motion.p>
 
         <motion.div
-          initial={motionInitial({ opacity: 0, y: 14 })}
+          initial={false}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.95, delay: 0.34, ease: LUX_EASE }}
         >
@@ -92,7 +88,7 @@ const HeroMobile = ({ t, content, currentLanguage, scrollToSection, firstName, l
         <div className="relative">
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[130%] h-[130%] bg-accent/[0.14] blur-[52px] rounded-full" />
           <motion.div
-            initial={motionInitial({ opacity: 0, scale: 0.96, y: 20 })}
+            initial={false}
             animate={
               reduceEffects
                 ? { opacity: 1, scale: 1, y: 0 }
@@ -124,7 +120,7 @@ const HeroMobile = ({ t, content, currentLanguage, scrollToSection, firstName, l
     </div>
 
     <motion.div
-      initial={motionInitial({ opacity: 0 })}
+      initial={false}
       animate={{ opacity: 1 }}
       transition={{ duration: 1, delay: 0.52, ease: LUX_EASE }}
       className="relative z-10 flex items-end justify-between pt-8 mt-auto border-t border-white/[0.05]"
@@ -145,8 +141,7 @@ const HeroMobile = ({ t, content, currentLanguage, scrollToSection, firstName, l
       </button>
     </motion.div>
   </div>
-  )
-}
+)
 
 const HeroDesktop = ({
   t,
@@ -206,10 +201,6 @@ const Hero = ({ content, currentLanguage, scrollToSection }) => {
   const isMobile = useIsMobile()
   const [displayText, setDisplayText] = useState('')
   const fullSubtitle = t.subtitle
-
-  useEffect(() => {
-    console.log('Hero mounted')
-  }, [])
 
   useEffect(() => {
     if (reduceEffects || isMobile) {

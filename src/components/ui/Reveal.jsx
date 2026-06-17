@@ -1,13 +1,7 @@
 import { forwardRef, useRef } from 'react'
 import { motion, useInView } from 'framer-motion'
-import { useIsMobile, useIsTouchDevice } from '../../hooks/useMediaQuery'
+import { isTouchLike } from '../../utils/touchLike'
 import { LUX_EASE, REVEAL_VIEWPORT } from '../../utils/animations'
-
-const useTouchLike = () => {
-  const isMobile = useIsMobile()
-  const isTouch = useIsTouchDevice()
-  return isMobile || isTouch
-}
 
 /**
  * Desktop: scroll-triggered fade-up via useInView.
@@ -17,9 +11,7 @@ const Reveal = forwardRef(function Reveal(
   { children, className = '', delay = 0, y = 24, as: Component = motion.div, ...props },
   forwardedRef
 ) {
-  const touchLike = useTouchLike()
-
-  if (touchLike) {
+  if (isTouchLike()) {
     return (
       <div ref={forwardedRef} className={className} {...props}>
         {children}

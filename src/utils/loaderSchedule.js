@@ -1,10 +1,10 @@
+import { isTouchLike } from './touchLike'
+
 export const MOBILE_LOADER_MS = 2200
 export const DESKTOP_LOADER_MS = 4000
 
 const holdMs = () =>
-  window.matchMedia('(max-width: 1023px), (pointer: coarse)').matches
-    ? MOBILE_LOADER_MS
-    : DESKTOP_LOADER_MS
+  isTouchLike() ? MOBILE_LOADER_MS : DESKTOP_LOADER_MS
 
 const startedAt =
   typeof window !== 'undefined'
@@ -40,7 +40,7 @@ const armDeadline = () => {
   timerId = window.setTimeout(runReveal, msRemaining())
 }
 
-if (typeof window !== 'undefined') {
+if (typeof window !== 'undefined' && !isTouchLike()) {
   armDeadline()
 }
 
