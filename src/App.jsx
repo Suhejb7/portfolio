@@ -1,21 +1,21 @@
 import { useState, useEffect, useLayoutEffect } from 'react'
-import Loading from './components/Loading'
+import Loading, { isTouchLike } from './components/Loading'
 import SiteContent from './SiteContent'
 import { content } from './data/content'
 import { subscribeLoaderReveal } from './utils/loaderSchedule'
 import { clearScrollLock } from './utils/scrollLock'
 
-function App() {
-  const [isLoading, setIsLoading] = useState(true)
-  const [revealed, setRevealed] = useState(false)
-  const [currentLanguage, setCurrentLanguage] = useState('en')
+const skipLoader = typeof window !== 'undefined' && isTouchLike()
 
-  useEffect(() => {
-    console.log('App mounted')
-  }, [])
+function App() {
+  const [isLoading, setIsLoading] = useState(!skipLoader)
+  const [revealed, setRevealed] = useState(skipLoader)
+  const [currentLanguage, setCurrentLanguage] = useState('en')
 
   useLayoutEffect(() => {
     clearScrollLock()
+
+    if (skipLoader) return undefined
 
     return subscribeLoaderReveal(() => {
       setIsLoading(false)
@@ -35,15 +35,19 @@ function App() {
     }
   }, [])
 
+  const showContent = skipLoader || !isLoading
+
   return (
     <>
-      <Loading
-        isLoading={isLoading}
-        content={content}
-        currentLanguage={currentLanguage}
-      />
+      {!skipLoader && (
+        <Loading
+          isLoading={isLoading}
+          content={content}
+          currentLanguage={currentLanguage}
+        />
+      )}
 
-      {!isLoading && (
+      {showContent && (
         <SiteContent
           revealed={revealed}
           currentLanguage={currentLanguage}
