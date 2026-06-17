@@ -1,5 +1,7 @@
 import { motion, AnimatePresence } from 'framer-motion'
+import { useEffect } from 'react'
 import { usePreferReducedEffects, useIsMobile } from '../hooks/useMediaQuery'
+import { LOADER_ROOT_ID } from '../utils/loaderSchedule'
 
 const LUX_EASE = [0.22, 1, 0.36, 1]
 const EXIT_EASE = [0.76, 0, 0.24, 1]
@@ -58,7 +60,10 @@ const TouchLoader = ({ content, lang }) => {
   const last = rest.join(' ')
 
   return (
-    <div className="fixed inset-0 z-[200] flex items-center justify-center overflow-hidden bg-[#030014]">
+    <div
+      id={LOADER_ROOT_ID}
+      className="fixed inset-0 z-[200] flex items-center justify-center overflow-hidden bg-[#030014]"
+    >
       <div className="absolute inset-0 loader-vignette pointer-events-none" />
       <div className="absolute inset-0 opacity-[0.028] noise-overlay pointer-events-none" />
 
@@ -106,6 +111,7 @@ const DesktopLoader = ({ lite, isMobile, content, lang }) => {
   return (
     <motion.div
       key="luxury-intro"
+      id={LOADER_ROOT_ID}
       className="fixed inset-0 z-[200] flex items-center justify-center overflow-hidden"
       initial={{ opacity: 1 }}
       exit={{ opacity: 0, transition: { duration: 0.85, ease: EXIT_EASE } }}
@@ -180,6 +186,12 @@ const Loading = ({ isLoading, content, currentLanguage }) => {
   const lite = usePreferReducedEffects()
   const isMobile = useIsMobile()
   const lang = currentLanguage || 'en'
+
+  useEffect(() => {
+    if (isLoading) {
+      console.log('LoadingScreen mounted')
+    }
+  }, [isLoading])
 
   if (!isLoading) return null
 

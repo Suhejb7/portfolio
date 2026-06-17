@@ -1,20 +1,31 @@
 export const MOBILE_LOADER_MS = 2200
 export const DESKTOP_LOADER_MS = 4000
+export const LOADER_ROOT_ID = 'portfolio-loading-screen'
 
 const holdMs = () =>
   window.matchMedia('(max-width: 1023px), (pointer: coarse)').matches
     ? MOBILE_LOADER_MS
     : DESKTOP_LOADER_MS
 
-/** Captured once when this module first loads — before React mounts. */
-const deadlineMs = holdMs()
-const startedAt = Date.now()
+/** Earliest possible t0 — set in index.html before the JS bundle loads. */
+const startedAt =
+  typeof window !== 'undefined'
+    ? (window.__loaderStartedAt ?? Date.now())
+    : 0
+
+const deadlineMs = typeof window !== 'undefined' ? holdMs() : MOBILE_LOADER_MS
 
 let timerId = null
 let hasRevealed = false
 const subscribers = new Set()
 
+export const isLoaderRevealed = () => hasRevealed
+
 const msRemaining = () => Math.max(0, deadlineMs - (Date.now() - startedAt))
+
+export const hideLoadingScreenDom = () => {
+  document.getElementById(LOADER_ROOT_ID)?.remove()
+}
 
 const runReveal = () => {
   if (hasRevealed) return
@@ -23,21 +34,23 @@ const runReveal = () => {
     clearTimeout(timerId)
     timerId = null
   }
+  hideLoadingScreenDom()
+  console.log('Loading timeout finished')
   subscribers.forEach((fn) => fn())
   subscribers.clear()
 }
 
 const armDeadline = () => {
   if (hasRevealed || timerId !== null) return
-  timerId = window.setTimeout(runReveal, msRemaining())
+  const remaining = msRemaining()
+  console.log('Loading timeout started', { remainingMs: remaining, deadlineMs })
+  timerId = window.setTimeout(runReveal, remaining)
 }
 
-// Hard timeout starts at JS parse time, not when React subscribes.
 if (typeof window !== 'undefined') {
   armDeadline()
 }
 
-/** Subscribe to the fixed 2200ms (mobile) deadline. Timer is never reset. */
 export const subscribeLoaderReveal = (onReveal) => {
   if (hasRevealed) {
     onReveal()
