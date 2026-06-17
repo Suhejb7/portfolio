@@ -920,3 +920,32 @@ html.lenis body {
     animation-iteration-count: infinite !important;
   }
 }
+
+/* Mobile / touch: no motion, no GPU-heavy filters (skills marquee exempt) */
+@media (max-width: 1023px), (pointer: coarse) {
+  *:not(.skills-marquee-track),
+  *:not(.skills-marquee-track)::before,
+  *:not(.skills-marquee-track)::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .skills-marquee-track {
+    animation: skills-marquee-scroll 65s linear infinite !important;
+  }
+
+  .noise-overlay {
+    display: none !important;
+  }
+
+  .hero-mobile-portrait__img {
+    opacity: 1;
+  }
+
+  .glass,
+  .glass-strong {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+}

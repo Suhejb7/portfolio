@@ -49,9 +49,9 @@ const Header = ({
     return () => unlockScroll()
   }, [isMobileMenuOpen])
 
-  const headerClassName = `fixed top-0 left-0 right-0 z-[60] transition-all duration-500 ${
-    showGlass ? 'py-2 sm:py-3' : 'py-3 sm:py-4'
-  }`
+  const headerClassName = `fixed top-0 left-0 right-0 z-[60] ${
+    touchLike ? '' : 'transition-all duration-500'
+  } ${showGlass ? 'py-2 sm:py-3' : 'py-3 sm:py-4'}`
 
   const headerStyle = { paddingTop: 'max(0.5rem, env(safe-area-inset-top))' }
 
@@ -59,8 +59,10 @@ const Header = ({
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div
         className={`relative grid grid-cols-[1fr_auto] xl:grid-cols-[auto_1fr_auto] items-center gap-x-3 xl:gap-x-6
-          transition-all duration-500 rounded-xl sm:rounded-2xl px-3 sm:px-4 lg:px-5
+          rounded-xl sm:rounded-2xl px-3 sm:px-4 lg:px-5
           h-14 sm:h-[3.75rem] min-w-0 ${
+            touchLike ? '' : 'transition-all duration-500'
+          } ${
             showGlass ? 'glass-strong shadow-glow-sm border border-white/[0.06]' : 'border border-transparent'
           }`}
       >
@@ -82,9 +84,9 @@ const Header = ({
               key={id}
               type="button"
               onClick={() => scrollToSection(id)}
-              className={`relative shrink-0 px-3 py-2 text-sm font-medium transition-colors duration-300 touch-target whitespace-nowrap ${
-                activeSection === id ? 'text-white' : 'text-white/40 hover:text-white/80'
-              }`}
+              className={`relative shrink-0 px-3 py-2 text-sm font-medium touch-target whitespace-nowrap ${
+                touchLike ? '' : 'transition-colors duration-300'
+              } ${activeSection === id ? 'text-white' : 'text-white/40 hover:text-white/80'}`}
             >
               {content[currentLanguage].nav[id]}
               {activeSection === id && (
@@ -168,7 +170,7 @@ const Header = ({
               key={id}
               type="button"
               onClick={() => scrollToSection(id)}
-              className={`text-left py-3.5 touch-target font-display text-[clamp(1.75rem,7vw,2.75rem)] font-bold leading-tight transition-colors ${
+              className={`text-left py-3.5 touch-target font-display text-[clamp(1.75rem,7vw,2.75rem)] font-bold leading-tight ${
                 activeSection === id ? 'gradient-text' : 'text-white/25 active:text-white/60'
               }`}
             >
@@ -189,7 +191,7 @@ const Header = ({
                   key={code}
                   type="button"
                   onClick={() => setCurrentLanguage(code)}
-                  className={`min-h-[40px] min-w-[40px] px-3 rounded-full text-sm font-semibold transition-all touch-target ${
+                  className={`min-h-[40px] min-w-[40px] px-3 rounded-full text-sm font-semibold touch-target ${
                     currentLanguage === code
                       ? 'bg-accent/25 text-white border border-accent/40'
                       : 'text-white/40 glass'

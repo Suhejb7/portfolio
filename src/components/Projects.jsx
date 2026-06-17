@@ -6,6 +6,7 @@ import SpotlightCard from './ui/SpotlightCard'
 import MagneticButton from './ui/MagneticButton'
 import Reveal from './ui/Reveal'
 import { usePreferReducedEffects } from '../hooks/useMediaQuery'
+import { isTouchLike } from '../utils/touchLike'
 
 const openLink = (url) => {
   if (url && url !== '#') window.open(url, '_blank', 'noopener,noreferrer')
@@ -88,7 +89,7 @@ const ParallaxProjectMedia = ({ project, index, t, preferEager }) => {
 }
 
 const ProjectCard = ({ project, index, t }) => {
-  const reduceEffects = usePreferReducedEffects()
+  const reduceEffects = usePreferReducedEffects() || isTouchLike()
   const Media = reduceEffects ? StaticProjectMedia : ParallaxProjectMedia
 
   return (
@@ -147,7 +148,7 @@ const ProjectCard = ({ project, index, t }) => {
             </div>
 
             <MagneticButton
-              className={`btn-project-cta w-full sm:w-auto self-stretch sm:self-start group/btn ${
+              className={`btn-project-cta w-full sm:w-auto self-stretch sm:self-start ${
                 project.comingSoon ? 'btn-project-cta--soon pointer-events-none' : ''
               }`}
               onClick={() => !project.comingSoon && openLink(project.link)}
@@ -158,9 +159,7 @@ const ProjectCard = ({ project, index, t }) => {
                 : project.link && project.link !== '#'
                   ? t.liveDemo
                   : t.viewProject}
-              {!project.comingSoon && (
-                <ArrowRight size={13} strokeWidth={1.5} className="group-hover/btn:translate-x-0.5 transition-transform duration-500 ease-out" />
-              )}
+              {!project.comingSoon && <ArrowRight size={13} strokeWidth={1.5} />}
             </MagneticButton>
           </div>
         </div>
@@ -171,12 +170,17 @@ const ProjectCard = ({ project, index, t }) => {
 
 const Projects = ({ projects, content, currentLanguage }) => {
   const t = content[currentLanguage].projects
+  const touchLike = isTouchLike()
 
   return (
     <section id="projects" className="section-padding relative overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-accent/[0.025] to-transparent pointer-events-none" />
-      <div className="absolute top-[20%] -right-24 w-[280px] h-[280px] rounded-full bg-accent/[0.05] blur-[90px] pointer-events-none lg:hidden" />
-      <div className="absolute bottom-[10%] -left-20 w-[240px] h-[240px] rounded-full bg-accent-secondary/[0.04] blur-[80px] pointer-events-none lg:hidden" />
+      {!touchLike && (
+        <>
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-accent/[0.025] to-transparent pointer-events-none" />
+          <div className="absolute top-[20%] -right-24 w-[280px] h-[280px] rounded-full bg-accent/[0.05] blur-[90px] pointer-events-none lg:hidden" />
+          <div className="absolute bottom-[10%] -left-20 w-[240px] h-[240px] rounded-full bg-accent-secondary/[0.04] blur-[80px] pointer-events-none lg:hidden" />
+        </>
+      )}
 
       <div className="max-w-6xl mx-auto relative">
         <SectionHeading title={t.title} label="03 — Work" className="mb-8 sm:mb-12 lg:mb-20" />

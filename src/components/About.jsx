@@ -4,14 +4,16 @@ import { GraduationCap } from 'lucide-react'
 import SectionHeading from './ui/SectionHeading'
 import Reveal from './ui/Reveal'
 import { REVEAL_VIEWPORT } from '../utils/animations'
+import { isTouchLike } from '../utils/touchLike'
 
 const Counter = ({ value, suffix = '' }) => {
+  const touchLike = isTouchLike()
   const ref = useRef(null)
   const isInView = useInView(ref, REVEAL_VIEWPORT)
-  const [count, setCount] = useState(0)
+  const [count, setCount] = useState(touchLike ? value : 0)
 
   useEffect(() => {
-    if (!isInView) return
+    if (touchLike || !isInView) return
     let start = 0
     const end = value
     const duration = 1400
@@ -26,11 +28,11 @@ const Counter = ({ value, suffix = '' }) => {
       }
     }, 16)
     return () => clearInterval(timer)
-  }, [isInView, value])
+  }, [isInView, value, touchLike])
 
   return (
     <span ref={ref} className="about-metric__value">
-      {count}
+      {touchLike ? value : count}
       {suffix}
     </span>
   )
@@ -93,6 +95,7 @@ const AboutNarrative = ({ t, heroDesc, delay = 0.08 }) => (
 const About = ({ content, currentLanguage, projectCount, skillCount }) => {
   const t = content[currentLanguage].about
   const heroDesc = content[currentLanguage].hero.description
+  const touchLike = isTouchLike()
 
   const stats = [
     { value: projectCount, suffix: '+', label: t.metrics.projects },
@@ -101,8 +104,12 @@ const About = ({ content, currentLanguage, projectCount, skillCount }) => {
 
   return (
     <section id="about" className="relative overflow-hidden py-20 sm:py-24 md:py-28 lg:py-40 px-4 sm:px-6 lg:px-8">
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-accent/[0.02] to-transparent pointer-events-none" />
-      <div className="absolute top-[30%] -left-24 w-[280px] h-[280px] rounded-full bg-accent/[0.04] blur-[90px] pointer-events-none lg:hidden" />
+      {!touchLike && (
+        <>
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-accent/[0.02] to-transparent pointer-events-none" />
+          <div className="absolute top-[30%] -left-24 w-[280px] h-[280px] rounded-full bg-accent/[0.04] blur-[90px] pointer-events-none lg:hidden" />
+        </>
+      )}
 
       <div className="max-w-6xl mx-auto relative">
         <SectionHeading title={t.title} label="01 — About" className="mb-8 sm:mb-10 lg:mb-16 px-5 lg:px-0" />

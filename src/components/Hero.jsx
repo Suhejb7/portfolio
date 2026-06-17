@@ -4,9 +4,9 @@ import { ArrowDown } from 'lucide-react'
 import MagneticButton from './ui/MagneticButton'
 import { fadeUp } from '../utils/animations'
 import { usePreferReducedEffects, useIsMobile } from '../hooks/useMediaQuery'
+import { isTouchLike } from '../utils/touchLike'
 
 const EASE = [0.16, 1, 0.3, 1]
-const LUX_EASE = [0.22, 1, 0.36, 1]
 
 const HeroPhotoDesktop = ({ t }) => (
   <motion.div
@@ -38,108 +38,54 @@ const HeroPhotoDesktop = ({ t }) => (
   </motion.div>
 )
 
-const HeroMobile = ({ t, content, currentLanguage, scrollToSection, firstName, lastName, reduceEffects }) => (
+const HeroMobile = ({ t, content, currentLanguage, scrollToSection, firstName, lastName }) => (
   <div className="lg:hidden relative min-h-[calc(100dvh_-_5rem_-_env(safe-area-inset-top,0px))] flex flex-col px-6 pt-1 pb-12">
     <div className="relative z-10 flex-1 grid grid-cols-[minmax(0,1fr)_clamp(112px,34vw,142px)] gap-x-4 sm:gap-x-5 items-center pt-8 pb-6">
       <div className="col-start-1 min-w-0 flex flex-col justify-center">
-        <motion.p
-          initial={false}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.9, ease: LUX_EASE }}
-          className="text-[9px] font-semibold uppercase tracking-[0.34em] text-accent/65 mb-7"
-        >
+        <p className="text-[9px] font-semibold uppercase tracking-[0.34em] text-accent/65 mb-7">
           {t.subtitle}
-        </motion.p>
+        </p>
 
-        <motion.h1
-          initial={false}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1, delay: 0.1, ease: LUX_EASE }}
-          className="font-display font-bold leading-[0.86] tracking-[-0.048em] mb-9"
-        >
+        <h1 className="font-display font-bold leading-[0.86] tracking-[-0.048em] mb-9">
           <span className="block text-[clamp(2.5rem,11vw,3.5rem)] text-white">{firstName}</span>
           {lastName && (
             <span className="block text-[clamp(2.5rem,11vw,3.5rem)] gradient-text mt-0.5">{lastName}</span>
           )}
-        </motion.h1>
+        </h1>
 
-        <motion.p
-          initial={false}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.95, delay: 0.22, ease: LUX_EASE }}
-          className="text-[14px] leading-[1.7] text-white/34 mb-14 tracking-[-0.01em]"
-        >
+        <p className="text-[14px] leading-[1.7] text-white/34 mb-14 tracking-[-0.01em]">
           {t.shortDescription}
-        </motion.p>
+        </p>
 
-        <motion.div
-          initial={false}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.95, delay: 0.34, ease: LUX_EASE }}
-        >
-          <MagneticButton onClick={() => scrollToSection('contact')} className="btn-mobile-primary">
-            {t.contactMe}
-          </MagneticButton>
-        </motion.div>
+        <button type="button" onClick={() => scrollToSection('contact')} className="btn-mobile-primary">
+          {t.contactMe}
+        </button>
       </div>
 
-      {/* Portrait column — no overlap with text */}
       <div className="col-start-2 row-start-1 self-center shrink-0 pointer-events-none select-none">
-        <div className="relative">
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[130%] h-[130%] bg-accent/[0.14] blur-[52px] rounded-full" />
-          <motion.div
-            initial={false}
-            animate={
-              reduceEffects
-                ? { opacity: 1, scale: 1, y: 0 }
-                : { opacity: 1, scale: 1, y: [0, -4, 0] }
-            }
-            transition={
-              reduceEffects
-                ? { duration: 1.15, delay: 0.28, ease: LUX_EASE }
-                : {
-                    opacity: { duration: 1.15, delay: 0.28, ease: LUX_EASE },
-                    scale: { duration: 1.15, delay: 0.28, ease: LUX_EASE },
-                    y: { duration: 8, repeat: Infinity, ease: 'easeInOut', delay: 1.2 },
-                  }
-            }
-            className="relative hero-mobile-portrait w-full"
-          >
-            <img
-              src="/optimized/pfp.jpg"
-              alt=""
-              aria-hidden="true"
-              className="hero-mobile-portrait__img"
-              loading="eager"
-            />
-            <div className="hero-mobile-portrait__sheen" aria-hidden="true" />
-            <div className="hero-mobile-portrait__fade" aria-hidden="true" />
-          </motion.div>
+        <div className="relative hero-mobile-portrait w-full">
+          <img
+            src="/optimized/pfp.jpg"
+            alt=""
+            aria-hidden="true"
+            className="hero-mobile-portrait__img"
+            loading="eager"
+          />
         </div>
       </div>
     </div>
 
-    <motion.div
-      initial={false}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 1, delay: 0.52, ease: LUX_EASE }}
-      className="relative z-10 flex items-end justify-between pt-8 mt-auto border-t border-white/[0.05]"
-    >
+    <div className="relative z-10 flex items-end justify-between pt-8 mt-auto border-t border-white/[0.05]">
       <span className="text-[10px] text-white/22 tracking-[0.04em]">{content[currentLanguage].about.location}</span>
       <button
         type="button"
         onClick={() => scrollToSection('about')}
-        className="flex items-center gap-1.5 text-[10px] text-white/30 uppercase tracking-[0.24em] touch-target active:text-white/50 transition-colors duration-500"
+        className="flex items-center gap-1.5 text-[10px] text-white/30 uppercase tracking-[0.24em] touch-target"
       >
         Scroll
-        <motion.span
-          animate={reduceEffects ? {} : { y: [0, 2.5, 0] }}
-          transition={{ duration: 2.4, repeat: Infinity, ease: [0.45, 0, 0.55, 1] }}
-        >
-          <ArrowDown size={12} strokeWidth={1.5} />
-        </motion.span>
+        <ArrowDown size={12} strokeWidth={1.5} />
       </button>
-    </motion.div>
+    </div>
   </div>
 )
 
@@ -199,6 +145,7 @@ const Hero = ({ content, currentLanguage, scrollToSection }) => {
   const t = content[currentLanguage].hero
   const reduceEffects = usePreferReducedEffects()
   const isMobile = useIsMobile()
+  const touchLike = isTouchLike()
   const [displayText, setDisplayText] = useState('')
   const fullSubtitle = t.subtitle
 
@@ -226,15 +173,17 @@ const Hero = ({ content, currentLanguage, scrollToSection }) => {
 
   return (
     <section id="home" className="relative min-h-[100dvh] lg:flex lg:items-center overflow-hidden">
-      <div className="absolute top-1/4 -left-16 w-[320px] h-[320px] lg:w-[500px] lg:h-[500px] rounded-full bg-accent/10 blur-[80px] lg:blur-[120px] pointer-events-none" />
-
-      {/* Mobile atmosphere */}
-      <div className="absolute inset-0 pointer-events-none lg:hidden" aria-hidden="true">
-        <div className="absolute top-[8%] right-[-25%] w-[75vw] h-[45vw] rounded-full bg-accent/[0.06] blur-[90px]" />
-        <div className="absolute bottom-[18%] left-[-35%] w-[65vw] h-[38vw] rounded-full bg-accent-secondary/[0.035] blur-[80px]" />
-        <div className="absolute inset-0 bg-gradient-to-b from-surface-base/20 via-transparent to-surface-base/50" />
-        <div className="absolute inset-0 opacity-[0.028] noise-overlay" />
-      </div>
+      {!touchLike && (
+        <>
+          <div className="absolute top-1/4 -left-16 w-[320px] h-[320px] lg:w-[500px] lg:h-[500px] rounded-full bg-accent/10 blur-[80px] lg:blur-[120px] pointer-events-none" />
+          <div className="absolute inset-0 pointer-events-none lg:hidden" aria-hidden="true">
+            <div className="absolute top-[8%] right-[-25%] w-[75vw] h-[45vw] rounded-full bg-accent/[0.06] blur-[90px]" />
+            <div className="absolute bottom-[18%] left-[-35%] w-[65vw] h-[38vw] rounded-full bg-accent-secondary/[0.035] blur-[80px]" />
+            <div className="absolute inset-0 bg-gradient-to-b from-surface-base/20 via-transparent to-surface-base/50" />
+            <div className="absolute inset-0 opacity-[0.028] noise-overlay" />
+          </div>
+        </>
+      )}
 
       <div className="w-full pt-[calc(4.75rem+env(safe-area-inset-top))] lg:pt-[calc(5.5rem+env(safe-area-inset-top))] lg:pb-16">
         <HeroMobile
@@ -244,7 +193,6 @@ const Hero = ({ content, currentLanguage, scrollToSection }) => {
           scrollToSection={scrollToSection}
           firstName={firstName}
           lastName={lastName}
-          reduceEffects={reduceEffects}
         />
         <HeroDesktop
           t={t}

@@ -5,9 +5,11 @@ import SectionHeading from './ui/SectionHeading'
 import SpotlightCard from './ui/SpotlightCard'
 import MagneticButton from './ui/MagneticButton'
 import Reveal from './ui/Reveal'
+import { isTouchLike } from '../utils/touchLike'
 
 const Contact = ({ content, currentLanguage }) => {
   const t = content[currentLanguage].contact
+  const touchLike = isTouchLike()
   const [formData, setFormData] = useState({ name: '', email: '', message: '' })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitStatus, setSubmitStatus] = useState(null)
@@ -65,10 +67,14 @@ const Contact = ({ content, currentLanguage }) => {
 
   return (
     <section id="contact" className="section-padding contact-section-padding contact-section relative overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-accent/[0.02] to-accent-tertiary/[0.03] pointer-events-none" />
-      <div className="absolute top-[15%] left-1/2 -translate-x-1/2 w-[min(520px,90vw)] h-[320px] rounded-full bg-accent/[0.04] blur-[100px] pointer-events-none" />
-      <div className="absolute bottom-[8%] -right-16 w-[280px] h-[280px] rounded-full bg-accent-secondary/[0.035] blur-[90px] pointer-events-none" />
-      <div className="absolute inset-0 opacity-[0.022] noise-overlay pointer-events-none" />
+      {!touchLike && (
+        <>
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-accent/[0.02] to-accent-tertiary/[0.03] pointer-events-none" />
+          <div className="absolute top-[15%] left-1/2 -translate-x-1/2 w-[min(520px,90vw)] h-[320px] rounded-full bg-accent/[0.04] blur-[100px] pointer-events-none" />
+          <div className="absolute bottom-[8%] -right-16 w-[280px] h-[280px] rounded-full bg-accent-secondary/[0.035] blur-[90px] pointer-events-none" />
+          <div className="absolute inset-0 opacity-[0.022] noise-overlay pointer-events-none" />
+        </>
+      )}
 
       <div className="max-w-6xl mx-auto relative">
         <SectionHeading
@@ -139,16 +145,10 @@ const Contact = ({ content, currentLanguage }) => {
                 <MagneticButton
                   type="submit"
                   disabled={isSubmitting}
-                  className="btn-contact-submit group/submit"
+                  className="btn-contact-submit"
                 >
                   {isSubmitting ? t.sending : t.sendMessage}
-                  {!isSubmitting && (
-                    <Send
-                      size={13}
-                      strokeWidth={1.5}
-                      className="transition-transform duration-500 ease-out group-hover/submit:translate-x-0.5 group-hover/submit:-translate-y-0.5"
-                    />
-                  )}
+                  {!isSubmitting && <Send size={13} strokeWidth={1.5} />}
                 </MagneticButton>
               </form>
             </SpotlightCard>

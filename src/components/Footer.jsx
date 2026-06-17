@@ -1,10 +1,12 @@
 import { Linkedin, Mail, Instagram, ArrowUpRight } from 'lucide-react'
 import { NAV_SECTIONS } from '../data/nav'
 import Reveal from './ui/Reveal'
+import { isTouchLike } from '../utils/touchLike'
 
 const Footer = ({ content, currentLanguage }) => {
   const t = content[currentLanguage].footer
   const nav = content[currentLanguage].nav
+  const touchLike = isTouchLike()
 
   const socialLinks = [
     { href: 'https://www.linkedin.com/in/suhejb-kadrija-6847a9250/', icon: Linkedin, label: 'LinkedIn' },
@@ -14,11 +16,15 @@ const Footer = ({ content, currentLanguage }) => {
 
   return (
     <footer className="footer-section">
-      <div
-        className="footer-section__glow bottom-0 right-[-10%] w-[320px] h-[320px] rounded-full bg-accent-secondary/[0.03] blur-[90px]"
-        aria-hidden="true"
-      />
-      <div className="absolute inset-0 opacity-[0.02] noise-overlay pointer-events-none" aria-hidden="true" />
+      {!touchLike && (
+        <>
+          <div
+            className="footer-section__glow bottom-0 right-[-10%] w-[320px] h-[320px] rounded-full bg-accent-secondary/[0.03] blur-[90px]"
+            aria-hidden="true"
+          />
+          <div className="absolute inset-0 opacity-[0.02] noise-overlay pointer-events-none" aria-hidden="true" />
+        </>
+      )}
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 footer-inner relative">
         <div className="footer-content">
@@ -39,13 +45,9 @@ const Footer = ({ content, currentLanguage }) => {
                 <ul className="footer-nav__list">
                   {NAV_SECTIONS.filter((id) => id !== 'home').map((id) => (
                     <li key={id}>
-                      <a href={`#${id}`} className="footer-nav__link group/link">
+                      <a href={`#${id}`} className="footer-nav__link">
                         {nav[id]}
-                        <ArrowUpRight
-                          size={11}
-                          strokeWidth={1.5}
-                          className="footer-nav__link-icon group-hover/link:opacity-60"
-                        />
+                        <ArrowUpRight size={11} strokeWidth={1.5} className="footer-nav__link-icon" />
                       </a>
                     </li>
                   ))}
