@@ -1,5 +1,5 @@
 import { useState, useEffect, useLayoutEffect, lazy, Suspense } from 'react'
-import SiteContentTouch from './SiteContentTouch'
+import SiteContentMobile from './SiteContentMobile'
 import { content } from './data/content'
 import { subscribeLoaderReveal } from './utils/loaderSchedule'
 import { clearScrollLock } from './utils/scrollLock'
@@ -38,7 +38,7 @@ function App() {
 
   if (mobile) {
     return (
-      <SiteContentTouch
+      <SiteContentMobile
         currentLanguage={currentLanguage}
         setCurrentLanguage={setCurrentLanguage}
       />

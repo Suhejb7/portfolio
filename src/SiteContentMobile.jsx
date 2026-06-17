@@ -1,40 +1,21 @@
 import { useState, useEffect } from 'react'
-import HeaderTouch from './components/HeaderTouch'
-import HeroTouch from './components/HeroTouch'
-import AnimatedBackgroundTouch from './components/ui/AnimatedBackgroundTouch'
+import Header from './components/Header'
+import Hero from './components/Hero'
+import About from './components/About'
+import Skills from './components/Skills'
+import Projects from './components/Projects'
+import Contact from './components/Contact'
+import Footer from './components/Footer'
 import { content } from './data/content'
 import { skills } from './data/skills'
 import { projects } from './data/projects'
 import { NAV_SECTIONS } from './data/nav'
 import { getScrollLockY, forceUnlockAndScrollTo } from './utils/scrollLock'
 
-const belowFoldLoad = import('./BelowFoldSections')
-const footerLoad = import('./components/Footer')
-
-const SiteContentTouch = ({ currentLanguage, setCurrentLanguage }) => {
+const SiteContentMobile = ({ currentLanguage, setCurrentLanguage }) => {
   const [activeSection, setActiveSection] = useState('home')
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
-  const [BelowFold, setBelowFold] = useState(null)
-  const [Footer, setFooter] = useState(null)
-
-  const t = content[currentLanguage].hero
-  const nameParts = t.title.split(' ')
-  const firstName = nameParts[0]
-  const lastName = nameParts.slice(1).join(' ')
-
-  useEffect(() => {
-    let cancelled = false
-    belowFoldLoad.then((mod) => {
-      if (!cancelled) setBelowFold(() => mod.default)
-    })
-    footerLoad.then((mod) => {
-      if (!cancelled) setFooter(() => mod.default)
-    })
-    return () => {
-      cancelled = true
-    }
-  }, [])
 
   useEffect(() => {
     const handleScroll = () => {
@@ -77,7 +58,7 @@ const SiteContentTouch = ({ currentLanguage, setCurrentLanguage }) => {
 
   return (
     <>
-      <HeaderTouch
+      <Header
         activeSection={activeSection}
         content={content}
         currentLanguage={currentLanguage}
@@ -86,35 +67,31 @@ const SiteContentTouch = ({ currentLanguage, setCurrentLanguage }) => {
         isScrolled={isScrolled}
         isMobileMenuOpen={isMobileMenuOpen}
         setIsMobileMenuOpen={setIsMobileMenuOpen}
+        revealed
       />
 
-      <div className="relative w-full z-[1]">
-        <AnimatedBackgroundTouch />
+      <Hero
+        content={content}
+        currentLanguage={currentLanguage}
+        scrollToSection={scrollToSection}
+      />
 
-        <main>
-          <HeroTouch
-            content={content}
-            currentLanguage={currentLanguage}
-            scrollToSection={scrollToSection}
-            t={t}
-            firstName={firstName}
-            lastName={lastName}
-          />
+      <About
+        content={content}
+        currentLanguage={currentLanguage}
+        projectCount={projects.length}
+        skillCount={Object.values(skills).flat().length}
+      />
 
-          {BelowFold && (
-            <BelowFold
-              content={content}
-              currentLanguage={currentLanguage}
-              projects={projects}
-              skills={skills}
-            />
-          )}
-        </main>
+      <Skills content={content} currentLanguage={currentLanguage} />
 
-        {Footer && <Footer content={content} currentLanguage={currentLanguage} />}
-      </div>
+      <Projects projects={projects} content={content} currentLanguage={currentLanguage} />
+
+      <Contact content={content} currentLanguage={currentLanguage} />
+
+      <Footer content={content} currentLanguage={currentLanguage} />
     </>
   )
 }
 
-export default SiteContentTouch
+export default SiteContentMobile
